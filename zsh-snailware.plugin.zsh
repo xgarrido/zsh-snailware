@@ -336,9 +336,6 @@ function __snailware_status ()
             printf ' %15s %6s %6s %6s %6s %6s\n' extra status source config. install tested
             __snailware_status matacqana bipoanalysis bipovisualization
             continue
-        else
-            echo
-            printf ' %15s %6s %6s %6s %6s %6s\n' "" status source config. install tested
         fi
 
         echo -n "${reset_color}"
