@@ -4,18 +4,19 @@
 # For $_snailware_commands[] generation, see the very end of this file.
 typeset -ga _snailware_commands _snailware_aliases
 typeset -gA _snailware_aliasmap
-typeset -g  _snailware_components
+typeset -ga _snailware_components
 
 _snailware_aliasmap=(
     up    update
-    source source
+    setup setup
     conf  configure
     build build
     reset reset
     test  test
-    st    status
-    diff  diff
-    co    checkout
+    st    svn-status
+    diff  svn-diff
+    co    svn-checkout
+    go    goto
 )
 
 _snailware_components=(
@@ -43,6 +44,10 @@ _snailware_components=(
     'snreconstruction'
     'snvisualization'
     'snanalysis'
+    'extra'
+    'matacqana'
+    'bipoanalysis'
+    'bipovisualization'
 )
 
 # --- Sub-command functions ---
@@ -64,6 +69,12 @@ _snailware_components=(
 function _snailware-build ()
 {
     [[ -n ${snailware_describe} ]] && print "Build a component" && return
+    __snailware-choose-component
+}
+
+function _snailware-configure ()
+{
+    [[ -n ${snailware_describe} ]] && print "Configure a component" && return
     local -a args
 
     args=(
@@ -77,22 +88,19 @@ function _snailware-build ()
     __snailware-choose-component
 }
 
-function _snailware-checkout ()
+function _snailware-goto ()
 {
-    [[ -n ${snailware_describe} ]] && print "SVN checkout a component" && return
+    [[ -n ${snailware_describe} ]] && print "Goto a component directory" && return
     __snailware-choose-component
 }
 
-function _snailware-configure ()
+function _snailware-rebuild ()
 {
-    [[ -n ${snailware_describe} ]] && print "Configure a component" && return
-    __snailware-choose-component
-}
+    [[ -n ${snailware_describe} ]] && print "Rebuild aggregator" && return
+    local -a aggregators
 
-function _snailware-diff ()
-{
-    [[ -n ${snailware_describe} ]] && print "SVN diff a component" && return
-    __snailware-choose-component
+    aggregators=('bayeux' 'channel' 'falaise')
+    _describe -t aggregators 'SN@ailWare option' aggregators
 }
 
 function _snailware-reset ()
@@ -101,13 +109,31 @@ function _snailware-reset ()
     __snailware-choose-component
 }
 
-function _snailware-source ()
+function _snailware-setup ()
 {
     [[ -n ${snailware_describe} ]] && print "Source a component" && return
     __snailware-choose-component
 }
 
 function _snailware-status ()
+{
+    [[ -n ${snailware_describe} ]] && print "Status of a component" && return
+    __snailware-choose-component
+}
+
+function _snailware-svn-checkout ()
+{
+    [[ -n ${snailware_describe} ]] && print "SVN checkout a component" && return
+    __snailware-choose-component
+}
+
+function _snailware-svn-diff ()
+{
+    [[ -n ${snailware_describe} ]] && print "SVN diff a component" && return
+    __snailware-choose-component
+}
+
+function _snailware-svn-status ()
 {
     [[ -n ${snailware_describe} ]] && print "SVN status of a component" && return
     __snailware-choose-component
@@ -145,7 +171,7 @@ function _snailware() {
     args=(
         '-h[print help]'
         '-d[debug mode]'
-        '-d[devel mode]'
+        '-D[devel mode]'
         '-v[verbose mode]'
         '-q[quiet mode]'
         '-i[interactive]'
