@@ -7,7 +7,7 @@ typeset -gA _snailware_aliasmap
 typeset -ga _snailware_components
 
 _snailware_aliasmap=(
-    up    update
+    up    svn-update
     setup setup
     conf  configure
     build build
@@ -139,15 +139,15 @@ function _snailware-svn-status ()
     __snailware-choose-component
 }
 
-function _snailware-test ()
+function _snailware-svn-update ()
 {
-    [[ -n ${snailware_describe} ]] && print "Run tests on a component" && return
+    [[ -n ${snailware_describe} ]] && print "SVN update a component" && return
     __snailware-choose-component
 }
 
-function _snailware-update ()
+function _snailware-test ()
 {
-    [[ -n ${snailware_describe} ]] && print "SVN update a component" && return
+    [[ -n ${snailware_describe} ]] && print "Run tests on a component" && return
     __snailware-choose-component
 }
 

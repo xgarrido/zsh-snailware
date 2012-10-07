@@ -56,8 +56,8 @@ function snailware ()
                 mode="rebuild"
             elif [ "${token}" = "reset" ]; then
                 mode="reset"
-            elif [ "${token}" = "update" ]; then
-                mode="update"
+            elif [ "${token}" = "svn-update" ]; then
+                mode="svn-update"
             elif [ "${token}" = "setup" ]; then
                 mode="setup"
             elif [ "${token}" = "test" ]; then
@@ -460,7 +460,7 @@ alias sninstall='snailware build'
 compdef _snailware sni=snailware
 alias snreset='snailware reset'
 compdef _snailware snr=snailware
-alias snup='snailware update'
+alias snup='snailware svn-update'
 compdef _snailware snu=snailware
 alias sntest='snailware test'
 compdef _snailware snt=snailware
@@ -470,6 +470,8 @@ alias sndiff='snailware svn-diff'
 compdef _snailware sndiff=snailware
 alias snco='snailware svn-checkout'
 compdef _snailware snco=snailware
+alias sngoto='snailware goto'
+compdef _snailware sngoto=snailware
 alias snstatus='snailware status all'
 
 
