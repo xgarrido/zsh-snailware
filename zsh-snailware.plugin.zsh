@@ -433,37 +433,40 @@ function __snailware_rebuild ()
 
     if [ "$1" = "bayeux" ]; then
         pkgtools__msg_notice "Rebuilding Bayeux component chain"
-        snreset bayeux
-        snconf datatools
-        snbuild datatools
+        snreset  bayeux
+        snconf   datatools
+        snbuild  datatools
         snsource datatools
-        snconf mygsl
-        snbuild mygsl
+        snconf   mygsl
+        snbuild  mygsl
         snsource mygsl
-        snconf geomtools
-        snbuild geomtools
+        snconf   geomtools
+        snbuild  geomtools
         snsource geomtools
-        snconf bayeux
-        snbuild bayeux
+        snconf   bayeux
+        snbuild  bayeux
+        snsource bayeux
     elif [ "$1" = "channel" ]; then
         pkgtools__msg_notice "Rebuilding Channel component chain"
-        snreset channel
-        snconf channel
-        snbuild channel
+        snreset  channel
+        snconf   channel
+        snbuild  channel
+        snsource channel
     elif [ "$1" = "falaise" ]; then
         pkgtools__msg_notice "Rebuilding Falaise component chain"
-        snreset falaise
-        snconf sngeometry
-        snbuild sngeometry
+        snreset  falaise
+        snconf   sngeometry
+        snbuild  sngeometry
         snsource sngeometry
-        snconf sncore
-        snbuild sncore
+        snconf   sncore
+        snbuild  sncore
         snsource sncore
-        snconf snutils sngenvertex sngenbb
-        snbuild snutils sngenvertex sngenbb
-        snsource snutils sngenvertex sngenbb
-        snconf falaise
-        snbuild falaise
+        snconf   sngenvertex sngenbb
+        snbuild  sngenvertex sngenbb
+        snsource sngenvertex sngenbb
+        snconf   falaise
+        snbuild  falaise
+        snsource falaise
     else
         pkgtools__msg_error "Unkown '$1' aggregator ! It must be either bayeux, channel or falaise !"
         __pkgtools__at_function_exit
