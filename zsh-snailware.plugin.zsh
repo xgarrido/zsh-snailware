@@ -1,5 +1,29 @@
 # -*- mode: shell-script; -*-
 
+alias snsource='snailware setup'
+compdef _snailware sns=snailware
+alias snconf='snailware configure'
+compdef _snailware snc=snailware
+alias snbuild='snailware build'
+compdef _snailware snb=snailware
+alias sninstall='snailware build'
+compdef _snailware sni=snailware
+alias snreset='snailware reset'
+compdef _snailware snr=snailware
+alias snup='snailware svn-update'
+compdef _snailware snu=snailware
+alias sntest='snailware test'
+compdef _snailware snt=snailware
+alias snst='snailware svn-status'
+compdef _snailware snst=snailware
+alias sndiff='snailware svn-diff'
+compdef _snailware sndiff=snailware
+alias snco='snailware svn-checkout'
+compdef _snailware snco=snailware
+alias sngoto='snailware goto'
+compdef _snailware sngoto=snailware
+alias snstatus='snailware status all'
+
 function snailware ()
 {
         __pkgtools__at_function_enter snailware
@@ -411,7 +435,7 @@ function __snailware_rebuild ()
         pkgtools__msg_notice "Rebuilding Bayeux component chain"
         snreset bayeux
         snconf datatools
-        snconf datatools
+        snbuild datatools
         snsource datatools
         snconf mygsl
         snbuild mygsl
@@ -423,7 +447,7 @@ function __snailware_rebuild ()
         snbuild bayeux
     elif [ "$1" = "channel" ]; then
         pkgtools__msg_notice "Rebuilding Channel component chain"
-        drd channel
+        snreset channel
         snconf channel
         snbuild channel
     elif [ "$1" = "falaise" ]; then
@@ -449,30 +473,5 @@ function __snailware_rebuild ()
     __pkgtools__at_function_exit
     return 0
 }
-
-alias snsource='snailware setup'
-compdef _snailware sns=snailware
-alias snconf='snailware configure'
-compdef _snailware snc=snailware
-alias snbuild='snailware build'
-compdef _snailware snb=snailware
-alias sninstall='snailware build'
-compdef _snailware sni=snailware
-alias snreset='snailware reset'
-compdef _snailware snr=snailware
-alias snup='snailware svn-update'
-compdef _snailware snu=snailware
-alias sntest='snailware test'
-compdef _snailware snt=snailware
-alias snst='snailware svn-status'
-compdef _snailware snst=snailware
-alias sndiff='snailware svn-diff'
-compdef _snailware sndiff=snailware
-alias snco='snailware svn-checkout'
-compdef _snailware snco=snailware
-alias sngoto='snailware goto'
-compdef _snailware sngoto=snailware
-alias snstatus='snailware status all'
-
 
 # end
