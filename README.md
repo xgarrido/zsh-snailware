@@ -89,4 +89,6 @@ bipovisualization        genbb_help sncore     trackfit
 ```
 
 You can select and build software agregators, component either build `all` the
-components in one time.
+components in one time. You can either select the component by using
+`TAB` key or start to write the beginning of the name of the compoment you want
+to build and use zsh completion power.
