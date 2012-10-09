@@ -28,7 +28,7 @@ $ source /path/to/zsh-snailware/zsh-snailware.zsh
 * Source `~/.zshrc`  to take changes into account:
 
 ``` bash
-source ~/.zshrc
+$ source ~/.zshrc
 ```
 
 ### With oh-my-zsh
