@@ -1,4 +1,3 @@
-# -*- mode: shell-script; -*-
 #compdef snailware
 
 # Global variables; setup the first time _snailware is called.
@@ -232,3 +231,10 @@ done
 unset desc f rev snailware_describe
 
 _snailware
+
+# Local Variables:
+# mode: Shell-Script
+# sh-indentation: 2
+# indent-tabs-mode: nil
+# sh-basic-offset: 2
+# End:

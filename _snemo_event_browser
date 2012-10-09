@@ -1,0 +1,56 @@
+#compdef snemo_event_browser
+
+function _snemo_event_browser  ()
+{
+  typeset -A opt_args
+  local context state line curcontext="$curcontext"
+
+  _arguments \
+    '(-h --help)'{-h,--help}'[produce help message]'          \
+    '(-d --debug)'{-d,--debug}'[produce debug logging]'       \
+    '(-v --verbose)'{-v,--verbose}'[produce verbose logging]' \
+    '(-s --scale)'{-s,--scale}'[scale factor for computer screen (height/width)]:number' \
+    '(-a --auto-reading-delay)'{-a,--auto-reading-delay}'[automatic event reading delay in seconds]:number' \
+    '(--detector-config-file)'--detector-config-file'[set the path to the detector config file]' \
+    '(--style-config-file)'--style-config-file'[set the path to the style config file]' \
+    '(--preload)'--preload'[enable the load in memory of Boost archive (only working with plain simulated output from sng4)]' \
+    '(-i --input-files)'{-i,--input-file}'[set an input file(s)]' \
+    '(-l --load-dll)'{-l,--load-dll}'[set a DLL to be loaded]' \
+    '(--2d-display-on-left)'--2d-display-on-left'[invert 2D and 3D display frame]' \
+    '(--full-2d-view)'--full-2d-view'[add a new tab with top/front/side 2D view in one frame]' \
+    '(--focus-on-roi)'--focus-on-roi'[focus views on the region-of-interest]' \
+    '(--show-simulated-vertex)'--show-simulated-vertex'[show simulated vertex]:boolean:(true false)' \
+    '(--show-simulated-tracks)'--show-simulated-tracks'[show simulated tracks]:boolean:(true false)' \
+    '(--show-simulated-hits)'--show-simulated-hits'[show simulated hits]:boolean:(true false)' \
+    '(--show-calibrated-hits)'--show-calibrated-hits'[show calibrated hits]:boolean:(true false)' \
+    '(--show-calibrated-info)'--show-calibrated-info'[show calibrated info]:boolean:(true false)' \
+    '(--show-tracker-clustered-hits)'--show-tracker-clustered-hits'[show tracker clustered hits]:boolean:(true false)' \
+    '(--show-tracker-trajectories)'--show-tracker-trajectories'[show tracker trajectories]:boolean:(false true)' \
+    '*: :->args' \
+    && ret=0
+
+  case $state in
+    args)
+      if [[ CURRENT -eq NORMARG && ${+opt_args[--match]} -eq 0 ]]
+      then
+        # If the current argument is the first non-option argument
+        # and --match isn't present then a pattern is expected
+        _message -e patterns 'pattern' && ret=0
+      else
+        _files -/
+      fi
+      ;;
+  esac
+
+  return ret
+}
+
+_snemo_event_browser "$@"
+
+
+# Local Variables:
+# mode: Shell-Script
+# sh-indentation: 2
+# indent-tabs-mode: nil
+# sh-basic-offset: 2
+# End:

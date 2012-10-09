@@ -1,0 +1,49 @@
+#compdef snemo_processing
+
+function _snemo_processing  ()
+{
+  typeset -A opt_args
+  local context state line curcontext="$curcontext"
+
+  _arguments \
+    '(-h --help)'{-h,--help}'[produce help message]' \
+    '(-d --debug)'{-d,--debug}'[produce debug logging]' \
+    '(-v --verbose)'{-v,--verbose}'[produce verbose logging]' \
+    '(-% --modulo)'{-%,--modulo}'[set the modulo event print period (default 10)]:number' \
+    '(-M --max-events)'{-M,--max-events}'[set the maximum number of events to be processed (default 0)]:number' \
+    '(-X --no-max-events)'{-X,--no-max-events}'[do not limit the maximum number of events to be processed]:number' \
+    '(-m --module)'{-m,--module}'[set the name of the processing module]' \
+    '(-c --module-manager-config)'{-c,--module-manager-config}'[set the module manager configuration]:file:_files -g \*.conf' \
+    '(-i --input-file)'{-i,--input-file}'[set an input file]' \
+    '(-S --simulated-input)'{-S,--simulated-input}'[use the plain simulated data format input (from sng4)]' \
+    '(-o --output-file)'{-o,--output-file}'[set the output file]' \
+    '(-O --max-events-per-output-file)'{-O,--max-events-per-output-file}'[set the maximum number of event records per output file]' \
+    '(-l --load-dll)'{-l,--load-dll}'[set a DLL to be loaded]' \
+    '(-L --dlls-config)'{-L,--dlls-config}'[set the DLL loader configuration file]' \
+    '*: :->args' \
+    && ret=0
+
+  case $state in
+    args)
+      if [[ CURRENT -eq NORMARG && ${+opt_args[--match]} -eq 0 ]]
+      then
+        # If the current argument is the first non-option argument
+        # and --match isn't present then a pattern is expected
+        _message -e patterns 'pattern' && ret=0
+      else
+        _files -/
+      fi
+      ;;
+  esac
+
+  return ret
+}
+
+_snemo_processing "$@"
+
+# Local Variables:
+# mode: Shell-Script
+# sh-indentation: 2
+# indent-tabs-mode: nil
+# sh-basic-offset: 2
+# End:
