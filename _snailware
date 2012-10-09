@@ -1,3 +1,4 @@
+# -*- mode: shell-script; -*-
 #compdef snailware
 
 # Global variables; setup the first time _snailware is called.
@@ -96,11 +97,8 @@ function _snailware-goto ()
 
 function _snailware-rebuild ()
 {
-    [[ -n ${snailware_describe} ]] && print "Rebuild aggregator" && return
-    local -a aggregators
-
-    aggregators=('bayeux' 'channel' 'falaise')
-    _describe -t aggregators 'SN@ailWare option' aggregators
+    [[ -n ${snailware_describe} ]] && print "Rebuild component from scratch" && return
+    __snailware-choose-component
 }
 
 function _snailware-reset ()

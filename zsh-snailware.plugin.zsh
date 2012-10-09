@@ -22,6 +22,8 @@ alias snco='snailware svn-checkout'
 compdef _snailware snco=snailware
 alias sngoto='snailware goto'
 compdef _snailware sngoto=snailware
+alias snrebuild='snailware rebuild'
+compdef _snailware snrebuild=snailware
 alias snstatus='snailware status all'
 
 function snailware ()
@@ -468,9 +470,10 @@ function __snailware_rebuild ()
         snbuild  falaise
         snsource falaise
     else
-        pkgtools__msg_error "Unkown '$1' aggregator ! It must be either bayeux, channel or falaise !"
-        __pkgtools__at_function_exit
-        return 1
+        pkgtools__msg_notice "Rebuilding '$1' component"
+        snreset $1
+        snconf  $1
+        snbuild $1
     fi
 
     __pkgtools__at_function_exit
