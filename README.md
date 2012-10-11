@@ -16,13 +16,13 @@ $ git clone git://github.com/xgarrido/zsh-snailware.git
 * Add the cloned directory to `fpath` variable to make use of zsh completion:
 
 ``` bash
-$ fpath=(/path/to/zsh-snailware $fpath)
+fpath=(/path/to/zsh-snailware $fpath)
 ```
 
 * Source the script **at the end** of `~/.zshrc`:
 
 ``` bash
-$ source /path/to/zsh-snailware/zsh-snailware.zsh
+source /path/to/zsh-snailware/zsh-snailware.zsh
 ```
 
 * Source `~/.zshrc`  to take changes into account:
@@ -50,6 +50,20 @@ plugins=( [plugins...] zsh-snailware)
 
 ``` bash
 $ source ~/.zshrc
+```
+
+### With [antigen](https://github.com/zsh-users/antigen)
+
+* Add this line to your `~/.zshrc` file:
+
+``` bash
+antigen-bundle xgarrido/zsh-functions
+```
+
+* To use the `nemo` theme write:
+
+``` bash
+antigen-theme xgarrido/zsh-functions nemo
 ```
 
 How to use
