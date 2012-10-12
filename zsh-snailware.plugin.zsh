@@ -29,8 +29,9 @@ alias snstatus='snailware status all'
 function snailware ()
 {
         __pkgtools__at_function_enter snailware
-    if [ ! -n "${NEMO_SETUP_DONE}" ];then
-        pkgtools__msg_error "NEMO setup is not defined ! Components will not be built!"
+    if [ ! -n "${SNAILWARE_SETUP_DONE}" ];then
+        pkgtools__msg_error "SN@ailWare setup is not defined ! Components will not be built!"
+        __pkgtools__at_function_exit
         return 1
     fi
 
@@ -327,11 +328,6 @@ function snailware ()
 function __snailware_status ()
 {
     __pkgtools__at_function_enter __snailware_status
-
-    if [ ! -n "${NEMO_SETUP_DONE}" ];then
-        pkgtools__msg_error "NEMO setup is not defined ! Components will not be built!"
-        return 1
-    fi
 
     for icompo in ${=@}
     do
