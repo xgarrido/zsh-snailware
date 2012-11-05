@@ -30,7 +30,7 @@ function snailware ()
 {
         __pkgtools__at_function_enter snailware
     if [ ! -n "${SNAILWARE_SETUP_DONE}" ];then
-        pkgtools__msg_error "SN@ailWare setup is not defined ! Components will not be built!"
+        pkgtools__msg_error "SN@ilWare setup is not defined ! Components will not be built!"
         __pkgtools__at_function_exit
         return 1
     fi
@@ -96,7 +96,7 @@ function snailware ()
             elif [ "${token}" = "svn-status" ]; then
                 mode="svn-status"
             elif [ "${token}" = "svn-checkout" ]; then
-                mode="checkout"
+                mode="svn-checkout"
             elif [ "${token}" = "goto" ]; then
                 mode="goto"
             else
@@ -173,20 +173,21 @@ function snailware ()
             continue
         fi
 
+        local version="${SNAILWARE_SOFTWARE_VERSION}"
         if [ "${mode}" = "svn-checkout" ]; then
             pkgtools__msg_notice "Checking out '${icompo}' component"
             case "${icompo}" in
                 datatools|brio|cuts|mygsl|geomtools|genbb_help|genvtx|materials|trackfit|matacqana)
-                    #     svn co https://nemo.lpc-caen.in2p3.fr/svn/${icompo}/trunk ${icompo}
-                    svn co https://nemo.lpc-caen.in2p3.fr/svn/${icompo}/branches/dev0 ${icompo}
+                    svn co https://nemo.lpc-caen.in2p3.fr/svn/${icompo}/${version} \
+                        ${SNAILWARE_DEV_DIR}/bayeux/${version}/${icompo}
                     ;;
                 TrackerPreClustering|CellularAutomatonTracker|TrackerClusterPath)
-                    svn co https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/Channel/Components/${icompo}/branches/dev0 ${icompo}
-                    #svn co https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/Channel/Components/${icompo}/trunk ${icompo}
+                    svn co https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/Channel/Components/${icompo}/${version} \
+                        ${SNAILWARE_DEV_DIR}/channel/${version}/${icompo}
                     ;;
                 snutils|sngeometry|sncore|sngenvertex|sngenbb|sng4|snreconstruction|snvisualization|snanalysis)
-                    svn co https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}/branches/dev0 ${icompo}
-                    #svn co https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}/trunk ${icompo}
+                    svn co https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}/${version} \
+                        ${SNAILWARE_DEV_DIR}/falaise/${version}/${icompo}
                     ;;
             esac
           continue
@@ -196,12 +197,13 @@ function snailware ()
         directory_list=(bayeux channel falaise)
         for i in ${directory_list}
         do
-            pushd ${NEMO_DEV_DIR}/$i/${icompo} > /dev/null 2>&1
+            pushd ${SNAILWARE_DEV_DIR}/$i/${version}/${icompo} > /dev/null 2>&1
             if [ $? -eq 0 ]; then
                 is_found=1
                 break
             fi
         done
+        unset version
 
         if [ ${is_found} -eq 0 ]; then
             pkgtools__msg_error "Development directory of '${icompo}' does not exist!"
@@ -210,6 +212,7 @@ function snailware ()
             __pkgtools__at_function_exit
             return 0
         fi
+        unset is_found
 
         local tmp_dir=/tmp/${USER}
         if [ ! -d ${tmp_dir} ]; then mkdir ${tmp_dir}; fi
@@ -367,7 +370,7 @@ function __snailware_status ()
         directory_list=(bayeux channel falaise)
         for i in ${directory_list}
         do
-            pushd ${NEMO_DEV_DIR}/$i/${icompo} > /dev/null 2>&1
+            pushd ${SNAILWARE_DEV_DIR}/$i/${icompo} > /dev/null 2>&1
             if [ $? -eq 0 ]; then
                 is_found=1
                 break
