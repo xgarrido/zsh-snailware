@@ -1,5 +1,12 @@
 # -*- mode: shell-script; -*-
 
+# Copyright (C) 2012 Xavier Garrido
+#
+# Author: garrido@lal.in2p3.fr
+# Keywords: snailware, supernemo
+# Requirements: pkgtools
+# Status: not intended to be distributed yet
+
 alias snsource='snailware setup'
 compdef _snailware sns=snailware
 alias snconf='snailware configure'
@@ -28,7 +35,7 @@ alias snstatus='snailware status all'
 
 function snailware ()
 {
-        __pkgtools__at_function_enter snailware
+    __pkgtools__at_function_enter snailware
     if [ ! -n "${SNAILWARE_SETUP_DONE}" ];then
         pkgtools__msg_error "SN@ilWare setup is not defined ! Components will not be built!"
         __pkgtools__at_function_exit
@@ -73,7 +80,7 @@ function snailware ()
 	        with_doc=1
 	    elif [ "${opt}" = "--without-doc" ]; then
 	        with_doc=0
-            fi
+           fi
         else
             if [ "${token}" = "configure" ]; then
                 mode="configure"
@@ -110,6 +117,7 @@ function snailware ()
     done
 
     pkgtools__msg_devel "mode=${mode}"
+    pkgtools__msg_devel "version=${version}"
     pkgtools__msg_devel "append_list_of_components_arg=${append_list_of_components_arg}"
     pkgtools__msg_devel "append_list_of_options_arg=${append_list_of_options_arg}"
     pkgtools__msg_devel "with_test=${with_test}"
@@ -174,6 +182,13 @@ function snailware ()
         fi
 
         local version="${SNAILWARE_SOFTWARE_VERSION}"
+        case "${icompo}" in
+            snutils|sngeometry|sncore|sngenvertex|sngenbb|sng4|snreconstruction|snvisualization|snanalysis)
+                version="branches/dev0"
+                pkgtools__msg_warning "Temporary fix for Falaise component : force the use of ${version} version"
+                ;;
+        esac
+
         if [ "${mode}" = "svn-checkout" ]; then
             pkgtools__msg_notice "Checking out '${icompo}' component"
             case "${icompo}" in
