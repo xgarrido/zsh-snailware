@@ -243,7 +243,7 @@ function snailware ()
                 local dcompo=$(echo ${icompo} | tr '[A-Z]' '[a-z]')
                 local test_env=$(eval "echo \$$(echo __${icompo}_dev_setup)")
                 if [ -n "${test_env}" ]; then
-                    pkgtools__msg_error "Component '${icompo}' has been already setup"
+                    pkgtools__msg_warning "Component '${icompo}' has been already setup"
                     continue
                 fi
 
@@ -376,16 +376,18 @@ function __snailware_status ()
         echo -n "${reset_color}"
         printf ' %15s' ${icompo[1,15]}
 
+        local version="${SNAILWARE_SOFTWARE_VERSION}"
         local is_found=0
         directory_list=(bayeux channel falaise)
         for i in ${directory_list}
         do
-            pushd ${SNAILWARE_DEV_DIR}/$i/${icompo} > /dev/null 2>&1
+            pushd ${SNAILWARE_DEV_DIR}/$i/${version}/${icompo} > /dev/null 2>&1
             if [ $? -eq 0 ]; then
                 is_found=1
                 break
             fi
         done
+        unset version
 
         if [ ${is_found} -eq 0 ]; then
             echo -n "$fg[red]"
@@ -432,6 +434,7 @@ function __snailware_status ()
         echo -n "${reset_color}\n"
     done
 
+    unset is_found
     unset icompo
 
     __pkgtools__at_function_exit
