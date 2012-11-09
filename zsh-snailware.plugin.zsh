@@ -154,7 +154,8 @@ function snailware ()
                 genbb_help \
                 genvtx     \
                 materials  \
-                trackfit
+                trackfit   \
+                emfield
             continue
         elif [ "${icompo}" = "channel" ]; then
             snailware ${append_list_of_options_arg} ${mode} \
@@ -182,17 +183,11 @@ function snailware ()
         fi
 
         local version="${SNAILWARE_SOFTWARE_VERSION}"
-        case "${icompo}" in
-            snutils|sngeometry|sncore|sngenvertex|sngenbb|sng4|snreconstruction|snvisualization|snanalysis)
-                version="branches/dev0"
-                pkgtools__msg_warning "Temporary fix for Falaise component : force the use of ${version} version"
-                ;;
-        esac
 
         if [ "${mode}" = "svn-checkout" ]; then
             pkgtools__msg_notice "Checking out '${icompo}' component"
             case "${icompo}" in
-                datatools|brio|cuts|mygsl|geomtools|genbb_help|genvtx|materials|trackfit|matacqana)
+                datatools|brio|cuts|mygsl|geomtools|genbb_help|genvtx|materials|trackfit|matacqana|emfield)
                     svn co https://nemo.lpc-caen.in2p3.fr/svn/${icompo}/${version} \
                         ${SNAILWARE_DEV_DIR}/bayeux/${version}/${icompo}
                     ;;

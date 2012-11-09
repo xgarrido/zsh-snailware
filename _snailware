@@ -31,6 +31,7 @@ _snailware_components=(
     'materials'
     'genbb_help'
     'trackfit'
+    'emfield'
     'channel'
     'TrackerPreClustering'
     'CellularAutomatonTracker'
