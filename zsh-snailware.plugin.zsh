@@ -130,6 +130,9 @@ function snailware ()
     append_list_of_options_arg=${append_list_of_options_arg%?}
 
     if [ "${mode}" = "status" ]; then
+        if [ "${SNAILWARE_SOFTWARE_VERSION}" = "git" ]; then
+            pkgtools__msg_notice "Compare git repository with svn/trunk"
+        fi
         __snailware_status ${append_list_of_components_arg}
         __pkgtools__at_function_exit
         return 0
@@ -444,7 +447,15 @@ function __snailware_status ()
             echo -n "$fg[red]"
             printf ' %7s %7s %7s %7s %7s' ¤ ¤ ¤ ¤ ¤
         else
-            local svn_status=$(svn_dirty_choose no ok)
+            local svn_status=
+            if [ "${SNAILWARE_SOFTWARE_VERSION}" = "git" ]; then
+                svn_status=$(git diff --name-status svn/trunk)
+                if [ "${svn_status}" != "" ]; then
+                    svn_status="no"
+                fi
+            else
+                svn_status=$(svn_dirty_choose no ok)
+            fi
             if [ "$svn_status" = "no" ]; then
                 echo -n "$fg[red]"
                 printf ' %4s' ✘
