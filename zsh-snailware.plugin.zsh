@@ -104,6 +104,8 @@ function snailware ()
                 mode="svn-status"
             elif [ "${token}" = "svn-checkout" ]; then
                 mode="svn-checkout"
+            elif [ "${token}" = "git-checkout" ]; then
+                mode="git-checkout"
             elif [ "${token}" = "goto" ]; then
                 mode="goto"
             else
@@ -133,11 +135,11 @@ function snailware ()
         return 0
     fi
 
-    if [ "${mode}" = "rebuild" ]; then
-        __snailware_rebuild ${append_list_of_components_arg}
-        __pkgtools__at_function_exit
-        return 0
-    fi
+    # if [ "${mode}" = "rebuild" ]; then
+    #     __snailware_rebuild ${append_list_of_components_arg}
+    #     __pkgtools__at_function_exit
+    #     return 0
+    # fi
 
     for icompo in ${=append_list_of_components_arg}
     do
@@ -147,10 +149,10 @@ function snailware ()
         elif [ "${icompo}" = "bayeux" ]; then
             snailware ${append_list_of_options_arg} ${mode} \
                 datatools  \
-                brio       \
-                cuts       \
                 mygsl      \
                 geomtools  \
+                brio       \
+                cuts       \
                 genbb_help \
                 genvtx     \
                 materials  \
@@ -184,20 +186,54 @@ function snailware ()
 
         local version="${SNAILWARE_SOFTWARE_VERSION}"
 
-        if [ "${mode}" = "svn-checkout" ]; then
+        if [[ "${mode}" = "svn-checkout" || "${mode}" = "git-checkout" ]]; then
             pkgtools__msg_notice "Checking out '${icompo}' component"
             case "${icompo}" in
                 datatools|brio|cuts|mygsl|geomtools|genbb_help|genvtx|materials|trackfit|matacqana|emfield)
-                    svn co https://nemo.lpc-caen.in2p3.fr/svn/${icompo}/${version} \
-                        ${SNAILWARE_DEV_DIR}/bayeux/${version}/${icompo}
+                    if [ "${mode}" = "svn-checkout" ]; then
+                        svn co https://nemo.lpc-caen.in2p3.fr/svn/${icompo}/${version} \
+                            ${SNAILWARE_DEV_DIR}/bayeux/${version}/${icompo}
+                    fi
+                    if [ "${mode}" = "git-checkout" ]; then
+                        if [ ! -d ${SNAILWARE_DEV_DIR}/bayeux/git/${icompo} ]; then
+                            mkdir -p ${SNAILWARE_DEV_DIR}/bayeux/git/${icompo}
+                        fi
+                        pushd ${SNAILWARE_DEV_DIR}/bayeux/git/${icompo}
+                        go-svn2git --username garrido --verbose \
+                            https://nemo.lpc-caen.in2p3.fr/svn/${icompo}
+                        popd
+                    fi
                     ;;
                 TrackerPreClustering|CellularAutomatonTracker|TrackerClusterPath)
-                    svn co https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/Channel/Components/${icompo}/${version} \
-                        ${SNAILWARE_DEV_DIR}/channel/${version}/${icompo}
+                    if [ "${mode}" = "svn-checkout" ]; then
+                        svn co https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/Channel/Components/${icompo}/${version} \
+                            ${SNAILWARE_DEV_DIR}/channel/${version}/${icompo}
+                    fi
+                    if [ "${mode}" = "git-checkout" ]; then
+                        if [ ! -d ${SNAILWARE_DEV_DIR}/channel/git/${icompo} ]; then
+                            mkdir -p ${SNAILWARE_DEV_DIR}/channel/git/${icompo}
+                        fi
+                        pushd ${SNAILWARE_DEV_DIR}/channel/git/${icompo}
+                        go-svn2git --username garrido --verbose \
+                            https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/Channel/Components/${icompo}
+                        popd
+                    fi
                     ;;
                 snutils|sngeometry|sncore|sngenvertex|sngenbb|sng4|snreconstruction|snvisualization|snanalysis)
-                    svn co https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}/${version} \
-                        ${SNAILWARE_DEV_DIR}/falaise/${version}/${icompo}
+                    if [ "${mode}" = "svn-checkout" ]; then
+                        svn co https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}/${version} \
+                            ${SNAILWARE_DEV_DIR}/falaise/${version}/${icompo}
+                    fi
+                    if [ "${mode}" = "git-checkout" ]; then
+                        if [ ! -d ${SNAILWARE_DEV_DIR}/falaise/git/${icompo} ]; then
+                            mkdir -p ${SNAILWARE_DEV_DIR}/falaise/git/${icompo}
+                        fi
+                        pushd ${SNAILWARE_DEV_DIR}/falaise/git/${icompo}
+
+                        go-svn2git --username garrido --verbose \
+                            https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}
+                    fi
+
                     ;;
             esac
           continue
@@ -233,6 +269,14 @@ function snailware ()
             svn-update)
                 pkgtools__msg_notice "Updating '${icompo}' component"
                 svn up
+                if [ $? -ne 0 ]; then
+                    pkgtools__msg_error "Updating '${icompo}' component fails !"
+                    break
+                fi
+                ;;
+            git-update)
+                pkgtools__msg_notice "Updating '${icompo}' component"
+                git svn fetch
                 if [ $? -ne 0 ]; then
                     pkgtools__msg_error "Updating '${icompo}' component fails !"
                     break
@@ -306,6 +350,13 @@ function snailware ()
                     [[ -f "__build-*" ]]   && rm -rf "__build-*"
                     [[ -f "__install-*" ]] && rm -rf "__install-*"
                 fi
+                ;;
+            rebuild)
+                pkgtools__msg_notice "Rebuilding '${icompo}' component"
+                snailware ${append_list_of_options_arg} reset     ${icompo}
+                snailware ${append_list_of_options_arg} configure ${icompo}
+                snailware ${append_list_of_options_arg} build     ${icompo}
+                snailware ${append_list_of_options_arg} setup     ${icompo}
                 ;;
             test)
                 pkgtools__msg_notice "Testing '${icompo}' component"
@@ -436,57 +487,6 @@ function __snailware_status ()
 
     unset is_found
     unset icompo
-
-    __pkgtools__at_function_exit
-    return 0
-}
-
-function __snailware_rebuild ()
-{
-    __pkgtools__at_function_enter __snailware_rebuild
-
-    if [ "$1" = "bayeux" ]; then
-        pkgtools__msg_notice "Rebuilding Bayeux component chain"
-        snreset  bayeux
-        snconf   datatools
-        snbuild  datatools
-        snsource datatools
-        snconf   mygsl
-        snbuild  mygsl
-        snsource mygsl
-        snconf   geomtools
-        snbuild  geomtools
-        snsource geomtools
-        snconf   bayeux
-        snbuild  bayeux
-        snsource bayeux
-    elif [ "$1" = "channel" ]; then
-        pkgtools__msg_notice "Rebuilding Channel component chain"
-        snreset  channel
-        snconf   channel
-        snbuild  channel
-        snsource channel
-    elif [ "$1" = "falaise" ]; then
-        pkgtools__msg_notice "Rebuilding Falaise component chain"
-        snreset  falaise
-        snconf   sngeometry
-        snbuild  sngeometry
-        snsource sngeometry
-        snconf   sncore
-        snbuild  sncore
-        snsource sncore
-        snconf   sngenvertex sngenbb
-        snbuild  sngenvertex sngenbb
-        snsource sngenvertex sngenbb
-        snconf   falaise
-        snbuild  falaise
-        snsource falaise
-    else
-        pkgtools__msg_notice "Rebuilding '$1' component"
-        snreset $1
-        snconf  $1
-        snbuild $1
-    fi
 
     __pkgtools__at_function_exit
     return 0

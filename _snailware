@@ -7,16 +7,18 @@ typeset -gA _snailware_aliasmap
 typeset -ga _snailware_components
 
 _snailware_aliasmap=(
-    up    svn-update
-    setup setup
-    conf  configure
-    build build
-    reset reset
-    test  test
-    st    svn-status
-    diff  svn-diff
-    co    svn-checkout
-    go    goto
+    up     svn-update
+    setup  setup
+    conf   configure
+    build  build
+    reset  reset
+    test   test
+    st     svn-status
+    diff   svn-diff
+    co     svn-checkout
+    git-co git-checkout
+    git-up git-checkout
+    go     goto
 )
 
 _snailware_components=(
@@ -116,6 +118,18 @@ function _snailware-setup ()
 function _snailware-status ()
 {
     [[ -n ${snailware_describe} ]] && print "Status of a component" && return
+    __snailware-choose-component
+}
+
+function _snailware-git-checkout ()
+{
+    [[ -n ${snailware_describe} ]] && print "Git-svn checkout a component" && return
+    __snailware-choose-component
+}
+
+function _snailware-git-update ()
+{
+    [[ -n ${snailware_describe} ]] && print "Git-svn update a component" && return
     __snailware-choose-component
 }
 
