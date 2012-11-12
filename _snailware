@@ -17,7 +17,7 @@ _snailware_aliasmap=(
     diff   svn-diff
     co     svn-checkout
     git-co git-checkout
-    git-up git-checkout
+    git-up git-update
     go     goto
 )
 

@@ -106,6 +106,8 @@ function snailware ()
                 mode="svn-checkout"
             elif [ "${token}" = "git-checkout" ]; then
                 mode="git-checkout"
+            elif [ "${token}" = "git-update" ]; then
+                mode="git-update"
             elif [ "${token}" = "goto" ]; then
                 mode="goto"
             else
