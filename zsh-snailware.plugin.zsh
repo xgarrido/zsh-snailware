@@ -181,7 +181,7 @@ function snailware ()
                 snvisualization  \
                 snanalysis
             continue
-        elif [ "${icompo}" = "extra" ]; then
+        elif [ "${icompo}" = "bipo" ]; then
             snailware ${append_list_of_options_arg} ${mode} \
                 matacqana    \
                 bipoanalysis \
@@ -193,59 +193,48 @@ function snailware ()
 
         if [[ "${mode}" = "svn-checkout" || "${mode}" = "git-checkout" ]]; then
             pkgtools__msg_notice "Checking out '${icompo}' component"
+            local svn_path
+            local aggregator
             case "${icompo}" in
                 datatools|brio|cuts|mygsl|geomtools|genbb_help|genvtx|materials|trackfit|matacqana|emfield)
-                    if [ "${mode}" = "svn-checkout" ]; then
-                        svn co https://nemo.lpc-caen.in2p3.fr/svn/${icompo}/${version} \
-                            ${SNAILWARE_DEV_DIR}/bayeux/${version}/${icompo}
-                    fi
-                    if [ "${mode}" = "git-checkout" ]; then
-                        if [ ! -d ${SNAILWARE_DEV_DIR}/bayeux/git/${icompo} ]; then
-                            mkdir -p ${SNAILWARE_DEV_DIR}/bayeux/git/${icompo}
-                        fi
-                        pushd ${SNAILWARE_DEV_DIR}/bayeux/git/${icompo}
-                        go-svn2git -username garrido -verbose \
-                            https://nemo.lpc-caen.in2p3.fr/svn/${icompo}
-                        popd
-                    fi
+                    svn_path="https://nemo.lpc-caen.in2p3.fr/svn/${icompo}"
+                    aggregator="bayeux"
                     ;;
                 TrackerPreClustering|CellularAutomatonTracker|TrackerClusterPath)
-                    if [ "${mode}" = "svn-checkout" ]; then
-                        svn co https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/Channel/Components/${icompo}/${version} \
-                            ${SNAILWARE_DEV_DIR}/channel/${version}/${icompo}
-                    fi
-                    if [ "${mode}" = "git-checkout" ]; then
-                        if [ ! -d ${SNAILWARE_DEV_DIR}/channel/git/${icompo} ]; then
-                            mkdir -p ${SNAILWARE_DEV_DIR}/channel/git/${icompo}
-                        fi
-                        pushd ${SNAILWARE_DEV_DIR}/channel/git/${icompo}
-                        go-svn2git -username garrido -verbose \
-                            https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/Channel/Components/${icompo}
-                        popd
-                    fi
-                    ;;
+                    svn_path="https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/Channel/Components/${icompo}"
+                    aggregator="channel"
+                     ;;
                 snutils|sngeometry|sncore|sngenvertex|sngenbb|sng4|snreconstruction|snvisualization|snanalysis)
-                    if [ "${mode}" = "svn-checkout" ]; then
-                        svn co https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}/${version} \
-                            ${SNAILWARE_DEV_DIR}/falaise/${version}/${icompo}
-                    fi
-                    if [ "${mode}" = "git-checkout" ]; then
-                        if [ ! -d ${SNAILWARE_DEV_DIR}/falaise/git/${icompo} ]; then
-                            mkdir -p ${SNAILWARE_DEV_DIR}/falaise/git/${icompo}
-                        fi
-                        pushd ${SNAILWARE_DEV_DIR}/falaise/git/${icompo}
-
-                        go-svn2git -username garrido -verbose \
-                            https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}
-                    fi
-
+                    svn_path="https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}"
+                    aggregator="falaise"
+                    ;;
+                bipoanalysis)
+                    svn_path="https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}"
+                    aggregator="bipo"
+                    ;;
+                bipovisualization)
+                    svn_path="https://nemo.lpc-caen.in2p3.fr/svn/snsw/misc/${icompo}"
+                    aggregator="bipo"
                     ;;
             esac
-          continue
+
+            if [ "${mode}" = "svn-checkout" ]; then
+                svn co ${svn_path}/${version} ${SNAILWARE_DEV_DIR}/${aggregator}/${version}/${icompo}
+            fi
+            if [ "${mode}" = "git-checkout" ]; then
+                if [ ! -d ${SNAILWARE_DEV_DIR}/${aggregator}/git/${icompo} ]; then
+                    mkdir -p ${SNAILWARE_DEV_DIR}/${aggregator}/git/${icompo}
+                fi
+                pushd ${SNAILWARE_DEV_DIR}/${aggregator}/git/${icompo}
+                go-svn2git -username garrido -verbose ${svn_path}
+                popd
+            fi
+
+            continue
         fi
 
         local is_found=0
-        directory_list=(bayeux channel falaise)
+        directory_list=(bayeux channel falaise bipo)
         for i in ${directory_list}
         do
             pushd ${SNAILWARE_DEV_DIR}/$i/${version}/${icompo} > /dev/null 2>&1
@@ -421,10 +410,10 @@ function __snailware_status ()
             printf ' %15s %6s %6s %6s %6s %6s\n' channel status source config. install tested
             __snailware_status TrackerPreClustering CellularAutomatonTracker TrackerClusterPath
             continue
-        elif [ "${icompo}" = "extra" ]; then
+        elif [ "${icompo}" = "bipo" ]; then
             echo
             echo -n "$fg_bold[magenta]"
-            printf ' %15s %6s %6s %6s %6s %6s\n' extra status source config. install tested
+            printf ' %15s %6s %6s %6s %6s %6s\n' bipo status source config. install tested
             __snailware_status matacqana bipoanalysis bipovisualization
             continue
         fi
