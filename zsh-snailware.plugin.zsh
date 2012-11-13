@@ -204,7 +204,7 @@ function snailware ()
                             mkdir -p ${SNAILWARE_DEV_DIR}/bayeux/git/${icompo}
                         fi
                         pushd ${SNAILWARE_DEV_DIR}/bayeux/git/${icompo}
-                        go-svn2git --username garrido --verbose \
+                        go-svn2git -username garrido -verbose \
                             https://nemo.lpc-caen.in2p3.fr/svn/${icompo}
                         popd
                     fi
@@ -219,7 +219,7 @@ function snailware ()
                             mkdir -p ${SNAILWARE_DEV_DIR}/channel/git/${icompo}
                         fi
                         pushd ${SNAILWARE_DEV_DIR}/channel/git/${icompo}
-                        go-svn2git --username garrido --verbose \
+                        go-svn2git -username garrido -verbose \
                             https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/Channel/Components/${icompo}
                         popd
                     fi
@@ -235,7 +235,7 @@ function snailware ()
                         fi
                         pushd ${SNAILWARE_DEV_DIR}/falaise/git/${icompo}
 
-                        go-svn2git --username garrido --verbose \
+                        go-svn2git -username garrido -verbose \
                             https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}
                     fi
 
