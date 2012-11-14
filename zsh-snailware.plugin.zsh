@@ -423,7 +423,7 @@ function __snailware_status ()
 
         local version="${SNAILWARE_SOFTWARE_VERSION}"
         local is_found=0
-        directory_list=(bayeux channel falaise)
+        directory_list=(bayeux channel falaise bipo)
         for i in ${directory_list}
         do
             pushd ${SNAILWARE_DEV_DIR}/$i/${version}/${icompo} > /dev/null 2>&1
