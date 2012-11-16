@@ -271,6 +271,7 @@ function snailware ()
             git-update)
                 pkgtools__msg_notice "Updating '${icompo}' component"
                 git svn fetch
+                git svn rebase
                 if [ $? -ne 0 ]; then
                     pkgtools__msg_error "Updating '${icompo}' component fails !"
                     break
