@@ -47,7 +47,7 @@ _snailware_components=(
     'snreconstruction'
     'snvisualization'
     'snanalysis'
-    'bipo'
+    'chevreuse'
     'matacqana'
     'bipoanalysis'
     'bipovisualization'

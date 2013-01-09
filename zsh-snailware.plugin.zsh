@@ -7,6 +7,9 @@
 # Requirements: pkgtools
 # Status: not intended to be distributed yet
 
+# Store current directory for further use
+export SNAILWARE_GIT_DIR=$(dirname $0)
+
 alias snsource='snailware setup'
 compdef _snailware sns=snailware
 alias snconf='snailware configure'
@@ -32,6 +35,20 @@ compdef _snailware sngoto=snailware
 alias snrebuild='snailware rebuild'
 compdef _snailware snrebuild=snailware
 alias snstatus='snailware status all'
+
+function snailware_setup ()
+{
+    __pkgtools__at_function_enter snailware_setup
+    local nemo_software_version="git"
+    if [ "x$1" != "x" ]; then
+        nemo_software_version="$1"
+    fi
+
+    export SNAILWARE_SOFTWARE_VERSION=${nemo_software_version}
+    bash --rcfile $SNAILWARE_GIT_DIR/setup_nemo.bash
+    __pkgtools__at_function_exit
+    return 0
+}
 
 function snailware ()
 {
@@ -140,12 +157,6 @@ function snailware ()
         return 0
     fi
 
-    # if [ "${mode}" = "rebuild" ]; then
-    #     __snailware_rebuild ${append_list_of_components_arg}
-    #     __pkgtools__at_function_exit
-    #     return 0
-    # fi
-
     for icompo in ${=append_list_of_components_arg}
     do
         if [ "${icompo}" = "all" ]; then
@@ -181,7 +192,7 @@ function snailware ()
                 snvisualization  \
                 snanalysis
             continue
-        elif [ "${icompo}" = "bipo" ]; then
+        elif [ "${icompo}" = "chevreuse" ]; then
             snailware ${append_list_of_options_arg} ${mode} \
                 matacqana    \
                 bipoanalysis \
@@ -196,25 +207,29 @@ function snailware ()
             local svn_path
             local aggregator
             case "${icompo}" in
-                datatools|brio|cuts|mygsl|geomtools|genbb_help|genvtx|materials|trackfit|matacqana|emfield)
+                datatools|brio|cuts|mygsl|geomtools|genbb_help|genvtx|materials|trackfit|emfield)
                     svn_path="https://nemo.lpc-caen.in2p3.fr/svn/${icompo}"
                     aggregator="bayeux"
                     ;;
                 TrackerPreClustering|CellularAutomatonTracker|TrackerClusterPath)
                     svn_path="https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/Channel/Components/${icompo}"
                     aggregator="channel"
-                     ;;
+                    ;;
                 snutils|sngeometry|sncore|sngenvertex|sngenbb|sng4|snreconstruction|snvisualization|snanalysis)
                     svn_path="https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}"
                     aggregator="falaise"
                     ;;
+                matacqana)
+                    svn_path="https://nemo.lpc-caen.in2p3.fr/svn/${icompo}"
+                    aggregator="chevreuse"
+                    ;;
                 bipoanalysis)
                     svn_path="https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}"
-                    aggregator="bipo"
+                    aggregator="chevreuse"
                     ;;
                 bipovisualization)
                     svn_path="https://nemo.lpc-caen.in2p3.fr/svn/snsw/misc/${icompo}"
-                    aggregator="bipo"
+                    aggregator="chevreuse"
                     ;;
             esac
 
@@ -222,10 +237,10 @@ function snailware ()
                 svn co ${svn_path}/${version} ${SNAILWARE_DEV_DIR}/${aggregator}/${version}/${icompo}
             fi
             if [ "${mode}" = "git-checkout" ]; then
-                if [ ! -d ${SNAILWARE_DEV_DIR}/${aggregator}/git/${icompo} ]; then
-                    mkdir -p ${SNAILWARE_DEV_DIR}/${aggregator}/git/${icompo}
+                if [ ! -d ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo} ]; then
+                    mkdir -p ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo}
                 fi
-                pushd ${SNAILWARE_DEV_DIR}/${aggregator}/git/${icompo}
+                pushd ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo}
                 go-svn2git -username garrido -verbose ${svn_path}
                 popd
             fi
@@ -237,9 +252,12 @@ function snailware ()
         directory_list=(bayeux channel falaise bipo)
         for i in ${directory_list}
         do
-            pushd ${SNAILWARE_DEV_DIR}/$i/${version}/${icompo} > /dev/null 2>&1
+            pushd ${SNAILWARE_DEV_DIR}/$i/${icompo} > /dev/null 2>&1
             if [ $? -eq 0 ]; then
                 is_found=1
+                if [ "$i" = "bayeux" ]; then
+                    git checkout legacy
+                fi
                 break
             fi
         done
@@ -411,10 +429,10 @@ function __snailware_status ()
             printf ' %15s %6s %6s %6s %6s %6s\n' channel status source config. install tested
             __snailware_status TrackerPreClustering CellularAutomatonTracker TrackerClusterPath
             continue
-        elif [ "${icompo}" = "bipo" ]; then
+        elif [ "${icompo}" = "chevreuse" ]; then
             echo
             echo -n "$fg_bold[magenta]"
-            printf ' %15s %6s %6s %6s %6s %6s\n' bipo status source config. install tested
+            printf ' %15s %6s %6s %6s %6s %6s\n' chevreuse status source config. install tested
             __snailware_status matacqana bipoanalysis bipovisualization
             continue
         fi
@@ -424,7 +442,7 @@ function __snailware_status ()
 
         local version="${SNAILWARE_SOFTWARE_VERSION}"
         local is_found=0
-        directory_list=(bayeux channel falaise bipo)
+        directory_list=(bayeux channel falaise chevreuse)
         for i in ${directory_list}
         do
             pushd ${SNAILWARE_DEV_DIR}/$i/${version}/${icompo} > /dev/null 2>&1
