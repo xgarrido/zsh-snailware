@@ -20,15 +20,11 @@ alias sninstall='snailware build'
 compdef _snailware sni=snailware
 alias snreset='snailware reset'
 compdef _snailware snr=snailware
-alias snup='snailware svn-update'
+alias snup='snailware git-update'
 compdef _snailware snu=snailware
 alias sntest='snailware test'
 compdef _snailware snt=snailware
-alias snst='snailware svn-status'
-compdef _snailware snst=snailware
-alias sndiff='snailware svn-diff'
-compdef _snailware sndiff=snailware
-alias snco='snailware svn-checkout'
+alias snco='snailware git-checkout'
 compdef _snailware snco=snailware
 alias sngoto='snailware goto'
 compdef _snailware sngoto=snailware
@@ -160,7 +156,7 @@ function snailware ()
     for icompo in ${=append_list_of_components_arg}
     do
         if [ "${icompo}" = "all" ]; then
-            snailware ${append_list_of_options_arg} ${mode} bayeux channel falaise
+            snailware ${append_list_of_options_arg} ${mode} bayeux channel falaise chevreuse
             continue
         elif [ "${icompo}" = "bayeux" ]; then
             snailware ${append_list_of_options_arg} ${mode} \
@@ -261,7 +257,7 @@ function snailware ()
                 break
             fi
         done
-        unset version
+        unset directory_list
 
         if [ ${is_found} -eq 0 ]; then
             pkgtools__msg_error "Development directory of '${icompo}' does not exist!"
@@ -395,6 +391,7 @@ function snailware ()
         popd > /dev/null 2>&1
     done
 
+    unset tmp_dir tmp_file_name
     unset with_test with_doc
     unset mode append_list_of_components_arg append_list_of_options_arg
 
@@ -409,7 +406,7 @@ function __snailware_status ()
     for icompo in ${=@}
     do
         if [ "${icompo}" = "all" ]; then
-            __snailware_status bayeux channel falaise
+            __snailware_status bayeux channel falaise chevreuse
             continue
         elif [ "${icompo}" = "falaise" ]; then
             echo
@@ -440,18 +437,17 @@ function __snailware_status ()
         echo -n "${reset_color}"
         printf ' %15s' ${icompo[1,15]}
 
-        local version="${SNAILWARE_SOFTWARE_VERSION}"
         local is_found=0
         directory_list=(bayeux channel falaise chevreuse)
         for i in ${directory_list}
         do
-            pushd ${SNAILWARE_DEV_DIR}/$i/${version}/${icompo} > /dev/null 2>&1
+            pushd ${SNAILWARE_DEV_DIR}/$i/${icompo} > /dev/null 2>&1
             if [ $? -eq 0 ]; then
                 is_found=1
                 break
             fi
         done
-        unset version
+        unset directory_list
 
         if [ ${is_found} -eq 0 ]; then
             echo -n "$fg[red]"
