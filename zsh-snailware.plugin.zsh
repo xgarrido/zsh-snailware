@@ -249,7 +249,7 @@ function snailware ()
         fi
 
         local is_found=0
-        directory_list=(bayeux channel falaise bipo)
+        directory_list=(bayeux channel falaise chevreuse)
         for i in ${directory_list}
         do
             pushd ${SNAILWARE_DEV_DIR}/$i/${icompo} > /dev/null 2>&1
