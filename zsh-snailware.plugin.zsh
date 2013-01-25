@@ -468,7 +468,7 @@ function __snailware_status ()
                 # printf "  "
             else
                 echo -n "$fg[green]"
-                printf ' %4s' 
+                printf ' %4s' ✔
                 # printf " "
             fi
             echo -n "${reset_color}"
@@ -476,7 +476,7 @@ function __snailware_status ()
             local test_env=$(eval "echo \$$(echo __${icompo}_dev_setup)")
             if [ -n "${test_env}" ]; then
                 echo -n "$fg[green]"
-                printf ' %6s' 
+                printf ' %6s' ✔
             else
                 echo -n "$fg[red]"
                 printf ' %6s' ✘
@@ -489,7 +489,7 @@ function __snailware_status ()
                 local file_test=".${icompo}_dev_$i"
                 if [ -f "${file_test}" ]; then
                     echo -n "$fg[green]"
-                    printf ' %6s' 
+                    printf ' %6s' ✔
                 else
                     echo -n "$fg[red]"
                     printf ' %6s' ✘
