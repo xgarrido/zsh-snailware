@@ -19,38 +19,39 @@ _snailware_aliasmap=(
     git-co git-checkout
     git-up git-update
     go     goto
+    env    environment
 )
 
 _snailware_components=(
-    'all'
-    'bayeux'
-    'datatools'
-    'brio'
-    'cuts'
-    'mygsl'
-    'geomtools'
-    'genvtx'
-    'materials'
-    'genbb_help'
-    'trackfit'
-    'emfield'
-    'channel'
-    'TrackerPreClustering'
-    'CellularAutomatonTracker'
-    'TrackerClusterPath'
-    'falaise'
-    'sngeometry'
-    'sncore'
-    'sngenvertex'
-    'sngenbb'
-    'sng4'
-    'snreconstruction'
-    'snvisualization'
-    'snanalysis'
-    'chevreuse'
-    'matacqana'
-    'bipoanalysis'
-    'bipovisualization'
+    all
+    bayeux
+    datatools
+    brio
+    cuts
+    mygsl
+    geomtools
+    genvtx
+    materials
+    genbb_help
+    trackfit
+    emfield
+    channel
+    TrackerPreClustering
+    CellularAutomatonTracker
+    TrackerClusterPath
+    falaise
+    sngeometry
+    sncore
+    sngenvertex
+    sngenbb
+    sng4
+    snreconstruction
+    snvisualization
+    snanalysis
+    chevreuse
+    matacqana
+    bipoanalysis
+    bipovisualization
 )
 
 # --- Sub-command functions ---
@@ -163,13 +164,24 @@ function _snailware-test ()
     __snailware-choose-component
 }
 
+function _snailware-environment ()
+{
+    [[ -n ${snailware_describe} ]] && print "Set environment" && return
+    local -a args
+    args=(
+      aggregator
+      development
+    )
+    _arguments ':environment:(${args})' && return
+}
+
 # --- Utility functions ---
 # They should be called __snailware-*() and kept seperate from the
 # sub-command functions.
 
 function __snailware-choose-component ()
 {
-    _describe -t _snailware_components 'SN@ailWare option' _snailware_components
+    _describe -t _snailware_components 'SN@ilWare option' _snailware_components
 }
 
 # And here is the actual _snailware(), that puts it all together:
