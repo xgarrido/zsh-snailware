@@ -1,6 +1,6 @@
 # -*- mode: shell-script; -*-
-
-# Copyright (C) 2012 Xavier Garrido
+#
+# Copyright (C) 2012-2013 Xavier Garrido
 #
 # Author: garrido@lal.in2p3.fr
 # Keywords: snailware, supernemo
@@ -10,6 +10,48 @@
 # Store current directory for further use
 export SNAILWARE_GIT_DIR=$(dirname $0)
 
+# Aggregator bundles
+typeset -ga __aggregator_bundles
+__aggregator_bundles=(cadfael bayeux channel falaise chevreuse)
+
+typeset -ga __bayeux_bundles
+__bayeux_bundles=(
+    datatools
+    mygsl
+    geomtools
+    brio
+    cuts
+    genbb_help
+    genvtx
+    materials
+    trackfit
+    emfield
+)
+typeset -ga __channel_bundles
+__channel_bundles=(
+    TrackerPreClustering
+    CellularAutomatonTracker
+    TrackerClusterPath
+)
+typeset -ga __falaise_bundles
+__falaise_bundles=(
+    sngeometry
+    sncore
+    sngenvertex
+    sngenbb
+    sng4
+    snreconstruction
+    snvisualization
+    snanalysis
+)
+typeset -ga __chevreuse_bundles
+__chevreuse_bundles=(
+    matacqana
+    bipoanalysis
+    bipovisualization
+)
+
+# Aliases
 alias snsource='snailware setup'
 compdef _snailware sns=snailware
 alias snconf='snailware configure'
@@ -32,28 +74,10 @@ alias snrebuild='snailware rebuild'
 compdef _snailware snrebuild=snailware
 alias snstatus='snailware status all'
 
-function snailware_setup ()
-{
-    __pkgtools__at_function_enter snailware_setup
-    local nemo_software_version="git"
-    if [ "x$1" != "x" ]; then
-        nemo_software_version="$1"
-    fi
-
-    export SNAILWARE_SOFTWARE_VERSION=${nemo_software_version}
-    bash --rcfile $SNAILWARE_GIT_DIR/setup_nemo.bash
-    __pkgtools__at_function_exit
-    return 0
-}
-
 function snailware ()
 {
+    __pkgtools__default_values
     __pkgtools__at_function_enter snailware
-    if [ ! -n "${SNAILWARE_SETUP_DONE}" ];then
-        pkgtools__msg_error "SN@ilWare setup is not defined ! Components will not be built!"
-        __pkgtools__at_function_exit
-        return 1
-    fi
 
     local mode
     local append_list_of_options_arg
@@ -95,7 +119,9 @@ function snailware ()
 	        with_doc=0
            fi
         else
-            if [ "${token}" = "configure" ]; then
+            if [ "${token}" = "environment" ]; then
+                mode="environment"
+            elif [ "${token}" = "configure" ]; then
                 mode="configure"
             elif [ "${token}" = "build" ]; then
                 mode="build"
@@ -134,7 +160,6 @@ function snailware ()
     done
 
     pkgtools__msg_devel "mode=${mode}"
-    pkgtools__msg_devel "version=${version}"
     pkgtools__msg_devel "append_list_of_components_arg=${append_list_of_components_arg}"
     pkgtools__msg_devel "append_list_of_options_arg=${append_list_of_options_arg}"
     pkgtools__msg_devel "with_test=${with_test}"
@@ -144,7 +169,20 @@ function snailware ()
     append_list_of_components_arg=${append_list_of_components_arg%?}
     append_list_of_options_arg=${append_list_of_options_arg%?}
 
-    if [ "${mode}" = "status" ]; then
+    # Setting environment
+    if [ ${mode} = environment ]; then
+        __snailware_environment
+        __pkgtools__at_function_exit
+        return 0
+    else
+        if [ ! -n "${SNAILWARE_SETUP_DONE}" ];then
+            pkgtools__msg_warning "Setting default environment"
+            __snailware_environment
+        fi
+    fi
+
+    # Development status
+    if [ ${mode} = status ]; then
         if [ "${SNAILWARE_SOFTWARE_VERSION}" = "git" ]; then
             pkgtools__msg_notice "Compare git repository with svn/trunk"
         fi
@@ -153,86 +191,57 @@ function snailware ()
         return 0
     fi
 
+    # Lookup
     for icompo in ${=append_list_of_components_arg}
     do
-        if [ "${icompo}" = "all" ]; then
-            snailware ${append_list_of_options_arg} ${mode} bayeux channel falaise chevreuse
+        if [ ${icompo} = all ]; then
+            snailware ${append_list_of_options_arg} ${mode} ${__aggregator_bundles}
             continue
-        elif [ "${icompo}" = "bayeux" ]; then
-            snailware ${append_list_of_options_arg} ${mode} \
-                datatools  \
-                mygsl      \
-                geomtools  \
-                brio       \
-                cuts       \
-                genbb_help \
-                genvtx     \
-                materials  \
-                trackfit   \
-                emfield
+        elif [ ${icompo} = bayeux ]; then
+            snailware ${append_list_of_options_arg} ${mode} ${__bayeux_bundles}
             continue
-        elif [ "${icompo}" = "channel" ]; then
-            snailware ${append_list_of_options_arg} ${mode} \
-                TrackerPreClustering     \
-                CellularAutomatonTracker \
-                TrackerClusterPath
+        elif [ ${icompo} = channel ]; then
+            snailware ${append_list_of_options_arg} ${mode} ${__channel_bundles}
             continue
-        elif [ "${icompo}" = "falaise" ]; then
-            snailware ${append_list_of_options_arg} ${mode} \
-                sngeometry       \
-                sncore           \
-                sngenvertex      \
-                sngenbb          \
-                sng4             \
-                snreconstruction \
-                snvisualization  \
-                snanalysis
+        elif [ ${icompo} = falaise ]; then
+            snailware ${append_list_of_options_arg} ${mode} ${__falaise_bundles}
             continue
-        elif [ "${icompo}" = "chevreuse" ]; then
-            snailware ${append_list_of_options_arg} ${mode} \
-                matacqana    \
-                bipoanalysis \
-                bipovisualization
+        elif [ ${icompo} = chevreuse ]; then
+            snailware ${append_list_of_options_arg} ${mode} ${__chevreuse_bundles}
             continue
         fi
 
         local version="${SNAILWARE_SOFTWARE_VERSION}"
 
-        if [[ "${mode}" = "svn-checkout" || "${mode}" = "git-checkout" ]]; then
+        if [[ ${mode} = svn-checkout || ${mode} = git-checkout ]]; then
             pkgtools__msg_notice "Checking out '${icompo}' component"
-            local svn_path
-            local aggregator
-            case "${icompo}" in
-                datatools|brio|cuts|mygsl|geomtools|genbb_help|genvtx|materials|trackfit|emfield)
-                    svn_path="https://nemo.lpc-caen.in2p3.fr/svn/${icompo}"
-                    aggregator="bayeux"
-                    ;;
-                TrackerPreClustering|CellularAutomatonTracker|TrackerClusterPath)
-                    svn_path="https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/Channel/Components/${icompo}"
-                    aggregator="channel"
-                    ;;
-                snutils|sngeometry|sncore|sngenvertex|sngenbb|sng4|snreconstruction|snvisualization|snanalysis)
-                    svn_path="https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}"
-                    aggregator="falaise"
-                    ;;
-                matacqana)
-                    svn_path="https://nemo.lpc-caen.in2p3.fr/svn/${icompo}"
-                    aggregator="chevreuse"
-                    ;;
-                bipoanalysis)
-                    svn_path="https://nemo.lpc-caen.in2p3.fr/svn/snsw/devel/${icompo}"
-                    aggregator="chevreuse"
-                    ;;
-                bipovisualization)
-                    svn_path="https://nemo.lpc-caen.in2p3.fr/svn/snsw/misc/${icompo}"
-                    aggregator="chevreuse"
-                    ;;
-            esac
+            local svn_path="https://nemo.lpc-caen.in2p3.fr/svn"
+            local aggregator="none"
+            if [[ ${__bayeux_bundles[(i)${icompo}]} -le ${#__bayeux_bundles} ]]; then
+                svn_path+="/${icompo}"
+                aggregator="bayeux"
+            elif [[ ${__channel_bundles[(i)${icompo}]} -le ${#__channel_bundles} ]]; then
+                svn_path+="/snsw/devel/Channel/Components/${icompo}"
+                aggregator="channel"
+            elif [[ ${__falaise_bundles[(i)${icompo}]} -le ${#__falaise_bundles} ]]; then
+                svn_path+="/snsw/devel/${icompo}"
+                aggregator="falaise"
+            elif [[ ${__chevreuse_bundles[(i)${icompo}]} -le ${#__chevreuse_bundles} ]]; then
+                aggregator="chevreuse"
+                case ${icompo} in
+                    matacqana)
+                        svn_path+="/${icompo}";;
+                    bipoanalysis)
+                        svn_path+="/snsw/devel/${icompo}";;
+                    bipovisualization)
+                        svn_path+="/snsw/misc/${icompo}";;
+                esac
+            fi
 
-            if [ "${mode}" = "svn-checkout" ]; then
+            if [ ${mode} = svn-checkout ]; then
                 svn co ${svn_path}/${version} ${SNAILWARE_DEV_DIR}/${aggregator}/${version}/${icompo}
             fi
-            if [ "${mode}" = "git-checkout" ]; then
+            if [ ${mode} = git-checkout ]; then
                 if [ ! -d ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo} ]; then
                     mkdir -p ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo}
                 fi
@@ -240,29 +249,28 @@ function snailware ()
                 go-svn2git -username garrido -verbose ${svn_path}
                 popd
             fi
-
             continue
         fi
 
+        # Look for the corresponding directory
         local is_found=0
-        directory_list=(bayeux channel falaise chevreuse)
-        for i in ${directory_list}
+        for i in ${__aggregator_bundles}
         do
             pushd ${SNAILWARE_DEV_DIR}/$i/${icompo} > /dev/null 2>&1
             if [ $? -eq 0 ]; then
                 is_found=1
                 if [ "$i" = "bayeux" ]; then
+                    pkgtools__msg_warning "Hacking 'bayeux' to use the 'legacy' branch by default"
                     git checkout legacy
                 fi
                 break
             fi
         done
-        unset directory_list
 
         if [ ${is_found} -eq 0 ]; then
             pkgtools__msg_error "Development directory of '${icompo}' does not exist!"
             continue
-        elif [ "${mode}" = "goto" ]; then
+        elif [ ${mode} = goto ]; then
             __pkgtools__at_function_exit
             return 0
         fi
@@ -273,7 +281,7 @@ function snailware ()
         local tmp_file_name=${tmp_dir}/${icompo}_dev.log
         if [ -f ${tmp_file_name} ]; then rm -rf ${tmp_file_name}; fi
 
-        case "${mode}" in
+        case ${mode} in
             svn-update)
                 pkgtools__msg_notice "Updating '${icompo}' component"
                 svn up
@@ -293,20 +301,24 @@ function snailware ()
                 ;;
             setup)
                 pkgtools__msg_notice "Sourcing '${icompo}' component"
-                local dcompo=$(echo ${icompo} | tr '[A-Z]' '[a-z]')
-                local test_env=$(eval "echo \$$(echo __${icompo}_dev_setup)")
-                if [ -n "${test_env}" ]; then
-                    pkgtools__msg_warning "Component '${icompo}' has been already setup"
-                    continue
-                fi
-
-                source __instal*/etc/${dcompo}_setup.sh > ${tmp_file_name} 2>&1
-                if [ $? -eq 0 ]; then
-                    do_${dcompo}_setup
-                    export __${icompo}_dev_setup=1
+                if [[ ${__aggregator_bundles[(i)${icompo}]} -le ${#__aggregator_bundles} ]]; then
+                    snailware::source_${icompo}
                 else
-                    pkgtools__msg_error "Sourcing '${icompo}' component fails !"
-                    break
+                    local dcompo=$(echo ${icompo} | tr '[A-Z]' '[a-z]')
+                    local test_env=$(eval "echo \$$(echo __${icompo}_dev_setup)")
+                    if [ -n "${test_env}" ]; then
+                        pkgtools__msg_warning "Component '${icompo}' has been already setup"
+                        continue
+                    fi
+
+                    source __instal*/etc/${dcompo}_setup.sh > ${tmp_file_name} 2>&1
+                    if [ $? -eq 0 ]; then
+                        do_${dcompo}_setup
+                        export __${icompo}_dev_setup=1
+                    else
+                        pkgtools__msg_error "Sourcing '${icompo}' component fails !"
+                        break
+                    fi
                 fi
                 ;;
             configure)
@@ -394,6 +406,73 @@ function snailware ()
     unset tmp_dir tmp_file_name
     unset with_test with_doc
     unset mode append_list_of_components_arg append_list_of_options_arg
+
+    __pkgtools__at_function_exit
+    return 0
+}
+
+# Private functions suppose not to be called interactively
+function __snailware_environment ()
+{
+    __pkgtools__at_function_enter __snailware_environment
+
+    if [ -n "${SNAILWARE_SETUP_DONE}" ]; then
+        __pkgtools__at_function_exit
+        return 0
+    fi
+    export SNAILWARE_SETUP_DONE=1
+
+    # Source aggregator function
+    source ${SNAILWARE_GIT_DIR}/aggregator.zsh
+
+    # Take care of running machine
+    case "${HOSTNAME}" in
+        garrido-laptop)
+            nemo_base_dir_tmp="/home/${USER}/Workdir/NEMO"
+            nemo_pro_dir_tmp="${nemo_base_dir_tmp}/supernemo/snware"
+            nemo_dev_dir_tmp="${nemo_base_dir_tmp}/supernemo/development"
+            nemo_simulation_dir_tmp="${nemo_base_dir_tmp}/supernemo/simulations"
+            ;;
+        pc-91089)
+            nemo_base_dir_tmp="/data/workdir/nemo/"
+            nemo_pro_dir_tmp="${nemo_base_dir_tmp}/supernemo/snware"
+            nemo_dev_dir_tmp="${nemo_base_dir_tmp}/supernemo/development"
+            nemo_simulation_dir_tmp="${nemo_base_dir_tmp}/supernemo/simulations"
+            ;;
+        lx3.lal.in2p3.fr|nemo*.lal.in2p3.fr)
+            nemo_base_dir_tmp="/exp/nemo/snsw"
+            nemo_pro_dir_tmp="${nemo_base_dir_tmp}/supernemo/snware"
+            nemo_dev_dir_tmp="/exp/nemo/${USER}/workdir/supernemo/development"
+            nemo_simulation_dir_tmp="/scratch/${USER}/simulations"
+            cadfael_version="0.1.0"
+            ;;
+        ccige*|ccage*)
+            nemo_base_dir_tmp="/afs/in2p3.fr/group/nemo"
+            nemo_pro_dir_tmp="${nemo_base_dir_tmp}/sw2"
+            nemo_dev_dir_tmp="/sps/nemo/scratch/${USER}/workdir/supernemo/development"
+            nemo_simulation_dir_tmp="/sps/nemo/scratch/${USER}/simulations"
+            cadfael_version="0.2.1"
+            cadfael_setup_file="${nemo_pro_dir_tmp}/Cadfael/Cadfael-${cadfael_version}/Install/etc/cadfael_setup.sh"
+            ;;
+        *)
+            nemo_base_dir_tmp="/home/${USER}/Workdir"
+            nemo_pro_dir_tmp="${nemo_base_dir_tmp}/supernemo/snware"
+            nemo_dev_dir_tmp="${nemo_base_dir_tmp}/supernemo/development"
+            ;;
+    esac
+
+
+    export SNAILWARE_BASE_DIR="${nemo_base_dir_tmp}"
+    export SNAILWARE_PRO_DIR="${nemo_pro_dir_tmp}"
+    export SNAILWARE_DEV_DIR="${nemo_dev_dir_tmp}"
+    export SNSW_SIMULATION_DIR="${nemo_simulation_dir_tmp}"
+
+    # Export main env. variables
+    which ccache > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        export CXX="ccache g++"
+        export CC="ccache gcc"
+    fi
 
     __pkgtools__at_function_exit
     return 0

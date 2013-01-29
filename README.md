@@ -22,7 +22,7 @@ fpath=(/path/to/zsh-snailware $fpath)
 * Source the script **at the end** of `~/.zshrc`:
 
 ``` bash
-source /path/to/zsh-snailware/zsh-snailware.zsh
+source /path/to/zsh-snailware/zsh-snailware.plugin.zsh
 ```
 
 * Source `~/.zshrc`  to take changes into account:
@@ -57,13 +57,7 @@ $ source ~/.zshrc
 * Add this line to your `~/.zshrc` file:
 
 ``` bash
-antigen-bundle xgarrido/zsh-functions
-```
-
-* To use the `nemo` theme write:
-
-``` bash
-antigen-theme xgarrido/zsh-functions nemo
+antigen-bundle xgarrido/zsh-snailware
 ```
 
 How to use

@@ -7,12 +7,12 @@ typeset -gA _snailware_aliasmap
 typeset -ga _snailware_components
 
 _snailware_aliasmap=(
-    up     svn-update
     setup  setup
     conf   configure
     build  build
     reset  reset
     test   test
+    up     svn-update
     st     svn-status
     diff   svn-diff
     co     svn-checkout
@@ -167,12 +167,12 @@ function _snailware-test ()
 function _snailware-environment ()
 {
     [[ -n ${snailware_describe} ]] && print "Set environment" && return
-    local -a args
-    args=(
-      aggregator
-      development
-    )
-    _arguments ':environment:(${args})' && return
+    # local -a args
+    # args=(
+    #   aggregator
+    #   development
+    # )
+    # _arguments ':environment:(${args})' && return
 }
 
 # --- Utility functions ---
