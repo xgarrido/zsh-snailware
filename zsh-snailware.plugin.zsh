@@ -12,7 +12,7 @@ export SNAILWARE_GIT_DIR=$(dirname $0)
 
 # Aggregator bundles
 typeset -ga __aggregator_bundles
-__aggregator_bundles=(cadfael bayeux channel falaise chevreuse)
+__aggregator_bundles=(bayeux channel falaise chevreuse)
 
 typeset -ga __bayeux_bundles
 __bayeux_bundles=(
@@ -261,7 +261,7 @@ function snailware ()
                 is_found=1
                 if [ "$i" = "bayeux" ]; then
                     pkgtools__msg_warning "Hacking 'bayeux' to use the 'legacy' branch by default"
-                    git checkout legacy
+                    git checkout legacy > /dev/null 2>&1
                 fi
                 break
             fi
@@ -422,9 +422,6 @@ function __snailware_environment ()
     fi
     export SNAILWARE_SETUP_DONE=1
 
-    # Source aggregator function
-    source ${SNAILWARE_GIT_DIR}/aggregator.zsh
-
     # Take care of running machine
     case "${HOSTNAME}" in
         garrido-laptop)
@@ -461,13 +458,12 @@ function __snailware_environment ()
             ;;
     esac
 
+    pkgtools__set_variable SNAILWARE_BASE_DIR "${nemo_base_dir_tmp}"
+    pkgtools__set_variable SNAILWARE_PRO_DIR  "${nemo_pro_dir_tmp}"
+    pkgtools__set_variable SNAILWARE_DEV_DIR  "${nemo_dev_dir_tmp}"
+    pkgtools__set_variable SNAILWARE_SIM_DIR  "${nemo_simulation_dir_tmp}"
 
-    export SNAILWARE_BASE_DIR="${nemo_base_dir_tmp}"
-    export SNAILWARE_PRO_DIR="${nemo_pro_dir_tmp}"
-    export SNAILWARE_DEV_DIR="${nemo_dev_dir_tmp}"
-    export SNSW_SIMULATION_DIR="${nemo_simulation_dir_tmp}"
-
-    # Export main env. variables
+   # Export main env. variables
     which ccache > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         export CXX="ccache g++"
