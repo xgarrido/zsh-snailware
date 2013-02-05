@@ -244,7 +244,15 @@ function snailware ()
                     mkdir -p ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo}
                 fi
                 pushd ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo}
-                go-svn2git -username garrido -verbose ${svn_path}
+                which go-svn2git > /dev/null 2>&1
+                if [ $? -eq 0 ]; then
+                    go-svn2git -username garrido -verbose ${svn_path}
+                else
+                    git svn init --prefix=svn/ --username=garrido     \
+                        --trunk=trunk --tags=tags --branches=branches \
+                        ${svn_path}
+                    git svn fetch
+                fi
                 popd
             fi
             continue
