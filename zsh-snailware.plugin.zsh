@@ -10,10 +10,6 @@
 # Store current directory for further use
 export SNAILWARE_GIT_DIR=$(dirname $0)
 
-# Aggregator bundles
-typeset -ga __aggregator_bundles
-__aggregator_bundles=(bayeux channel falaise chevreuse)
-
 typeset -ga __bayeux_bundles
 __bayeux_bundles=(
     datatools
@@ -196,6 +192,8 @@ function snailware ()
     do
         if [ ${icompo} = all ]; then
             snailware ${append_list_of_options_arg} ${mode} ${__aggregator_bundles}
+            continue
+        elif [ ${icompo} = cadfael ]; then
             continue
         elif [ ${icompo} = bayeux ]; then
             snailware ${append_list_of_options_arg} ${mode} ${__bayeux_bundles}
