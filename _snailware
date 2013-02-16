@@ -7,51 +7,31 @@ typeset -gA _snailware_aliasmap
 typeset -ga _snailware_components
 
 _snailware_aliasmap=(
-    setup  setup
-    conf   configure
-    build  build
-    reset  reset
-    test   test
-    up     svn-update
-    st     svn-status
-    diff   svn-diff
-    co     svn-checkout
-    git-co git-checkout
-    git-up git-update
-    go     goto
-    env    environment
+  setup  setup
+  conf   configure
+  build  build
+  reset  reset
+  test   test
+  up     svn-update
+  st     svn-status
+  diff   svn-diff
+  co     svn-checkout
+  git-co git-checkout
+  git-up git-update
+  go     goto
+  env    environment
 )
 
 _snailware_components=(
-    all
-    bayeux
-    datatools
-    brio
-    cuts
-    mygsl
-    geomtools
-    genvtx
-    materials
-    genbb_help
-    trackfit
-    emfield
-    channel
-    TrackerPreClustering
-    CellularAutomatonTracker
-    TrackerClusterPath
-    falaise
-    sngeometry
-    sncore
-    sngenvertex
-    sngenbb
-    sng4
-    snreconstruction
-    snvisualization
-    snanalysis
-    chevreuse
-    matacqana
-    bipoanalysis
-    bipovisualization
+  all
+  bayeux
+  ${__bayeux_bundles}
+  channel
+  ${__channel_bundles}
+  falaise
+  ${__falaise_bundles}
+  chevreuse
+  ${__chevreuse_bundles}
 )
 
 # --- Sub-command functions ---

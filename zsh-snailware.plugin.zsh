@@ -39,6 +39,7 @@ __falaise_bundles=(
     snreconstruction
     snvisualization
     snanalysis
+    snelectronics
 )
 typeset -ga __chevreuse_bundles
 __chevreuse_bundles=(
@@ -179,9 +180,6 @@ function snailware ()
 
     # Development status
     if [ ${mode} = status ]; then
-        if [ "${SNAILWARE_SOFTWARE_VERSION}" = "git" ]; then
-            pkgtools__msg_notice "Compare git repository with svn/trunk"
-        fi
         __snailware_status ${append_list_of_components_arg}
         __pkgtools__at_function_exit
         return 0
@@ -209,8 +207,6 @@ function snailware ()
             continue
         fi
 
-        local version="${SNAILWARE_SOFTWARE_VERSION}"
-
         if [[ ${mode} = svn-checkout || ${mode} = git-checkout ]]; then
             pkgtools__msg_notice "Checking out '${icompo}' component"
             local svn_path="https://nemo.lpc-caen.in2p3.fr/svn"
@@ -237,7 +233,8 @@ function snailware ()
             fi
 
             if [ ${mode} = svn-checkout ]; then
-                svn co ${svn_path}/${version} ${SNAILWARE_DEV_DIR}/${aggregator}/${version}/${icompo}
+                pkgtools__msg_warning "SVN checkout will use the trunk directory"
+                svn co ${svn_path}/trunk ${SNAILWARE_DEV_DIR}/${aggregator}/trunk/${icompo}
             fi
             if [ ${mode} = git-checkout ]; then
                 if [ ! -d ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo} ]; then
@@ -267,7 +264,15 @@ function snailware ()
                 is_found=1
                 if [ "$i" = "bayeux" ]; then
                     pkgtools__msg_warning "Hacking 'bayeux' to use the 'legacy' branch by default"
-                    git checkout legacy > /dev/null 2>&1
+                    if [ -d branches ]; then
+                        pushd branches/legacy
+                    else
+                        git checkout legacy > /dev/null 2>&1
+                    fi
+                else
+                    if [ -d trunk ]; then
+                        pushd trunk
+                    fi
                 fi
                 break
             fi
@@ -535,7 +540,7 @@ function __snailware_status ()
             printf ' %7s %7s %7s %7s %7s' ¤ ¤ ¤ ¤ ¤
         else
             local svn_status=
-            if [ "${SNAILWARE_SOFTWARE_VERSION}" = "git" ]; then
+            if [ -d .git ]; then
                 svn_status=$(git diff --name-status svn/trunk)
                 if [ "${svn_status}" != "" ]; then
                     svn_status="no"
