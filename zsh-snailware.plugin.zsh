@@ -76,9 +76,9 @@ function snailware ()
     __pkgtools__default_values
     __pkgtools__at_function_enter snailware
 
-    local mode
     local append_list_of_options_arg
     local append_list_of_components_arg
+    local mode
     local with_test=1
     local with_doc=0
 
@@ -240,17 +240,17 @@ function snailware ()
                 if [ ! -d ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo} ]; then
                     mkdir -p ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo}
                 fi
-                pushd ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo}
-                which go-svn2git > /dev/null 2>&1
-                if [ $? -eq 0 ]; then
-                    go-svn2git -username garrido -verbose ${svn_path}
-                else
-                    git svn init --prefix=svn/ --username=garrido     \
-                        --trunk=trunk --tags=tags --branches=branches \
-                        ${svn_path}
-                    git svn fetch
-                fi
-                popd
+                (
+                    cd ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo}
+                    if (( $+commands[dotfiles] )); then
+                        go-svn2git -username garrido -verbose ${svn_path}
+                    else
+                        git svn init --prefix=svn/ --username=garrido     \
+                            --trunk=trunk --tags=tags --branches=branches \
+                            ${svn_path}
+                        git svn fetch
+                    fi
+                )
             fi
             continue
         fi
@@ -264,15 +264,7 @@ function snailware ()
                 is_found=1
                 if [ "$i" = "bayeux" ]; then
                     pkgtools__msg_warning "Hacking 'bayeux' to use the 'legacy' branch by default"
-                    if [ -d branches ]; then
-                        pushd branches/legacy
-                    else
-                        git checkout legacy > /dev/null 2>&1
-                    fi
-                else
-                    if [ -d trunk ]; then
-                        pushd trunk
-                    fi
+                    git checkout legacy > /dev/null 2>&1
                 fi
                 break
             fi
