@@ -39,7 +39,7 @@ __falaise_bundles=(
     snreconstruction
     snvisualization
     snanalysis
-    snelectronics
+#    snelectronics
 )
 typeset -ga __chevreuse_bundles
 __chevreuse_bundles=(
