@@ -79,7 +79,7 @@ function snailware ()
     local append_list_of_options_arg
     local append_list_of_components_arg
     local mode
-    local with_test=1
+    local with_test=0
     local with_doc=0
 
     while [ -n "$1" ]; do
@@ -242,7 +242,7 @@ function snailware ()
                 fi
                 (
                     cd ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo}
-                    if (( $+commands[dotfiles] )); then
+                    if (( $+commands[go-svn2git] )); then
                         go-svn2git -username garrido -verbose ${svn_path}
                     else
                         git svn init --prefix=svn/ --username=garrido     \
