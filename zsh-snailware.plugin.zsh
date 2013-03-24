@@ -81,9 +81,10 @@ function snailware ()
     local mode
     local with_test=0
     local with_doc=0
+    local git_branch=
 
     while [ -n "$1" ]; do
-        local token="$1"
+        local token=$1
         if [ "${token[0,1]}" = "-" ]; then
 	    local opt=${token}
             append_list_of_options_arg+="${opt} "
@@ -114,7 +115,11 @@ function snailware ()
 	        with_doc=1
 	    elif [ "${opt}" = "--without-doc" ]; then
 	        with_doc=0
-           fi
+	    elif [ "${opt}" = "--branch" ]; then
+                shift 1
+	        git_branch=$1
+                append_list_of_options_arg+="${git_branch} "
+            fi
         else
             if [ "${token}" = "environment" ]; then
                 mode="environment"
@@ -144,6 +149,8 @@ function snailware ()
                 mode="git-checkout"
             elif [ "${token}" = "git-update" ]; then
                 mode="git-update"
+            elif [ "${token}" = "git-branch" ]; then
+                mode="git-branch"
             elif [ "${token}" = "goto" ]; then
                 mode="goto"
             else
@@ -161,10 +168,15 @@ function snailware ()
     pkgtools__msg_devel "append_list_of_options_arg=${append_list_of_options_arg}"
     pkgtools__msg_devel "with_test=${with_test}"
     pkgtools__msg_devel "with_doc=${with_doc}"
+    pkgtools__msg_devel "git_branch=${git_branch}"
 
     # Remove last space
     append_list_of_components_arg=${append_list_of_components_arg%?}
     append_list_of_options_arg=${append_list_of_options_arg%?}
+
+    # Move into an array
+    append_list_of_components_arg=($(echo ${append_list_of_components_arg}))
+    append_list_of_options_arg=($(echo ${append_list_of_options_arg}))
 
     # Setting environment
     if [ ${mode} = environment ]; then
@@ -262,10 +274,10 @@ function snailware ()
             pushd ${SNAILWARE_DEV_DIR}/$i/${icompo} > /dev/null 2>&1
             if [ $? -eq 0 ]; then
                 is_found=1
-                if [ "$i" = "bayeux" ]; then
-                    pkgtools__msg_warning "Hacking 'bayeux' to use the 'legacy' branch by default"
-                    git checkout legacy > /dev/null 2>&1
-                fi
+                # if [ "$i" = "bayeux" ]; then
+                #     pkgtools__msg_warning "Hacking 'bayeux' to use the 'legacy' branch by default"
+                #     git checkout legacy > /dev/null 2>&1
+                # fi
                 break
             fi
         done
@@ -285,20 +297,22 @@ function snailware ()
         if [ -f ${tmp_file_name} ]; then rm -rf ${tmp_file_name}; fi
 
         case ${mode} in
-            svn-update)
-                pkgtools__msg_notice "Updating '${icompo}' component"
-                svn up
-                if [ $? -ne 0 ]; then
-                    pkgtools__msg_error "Updating '${icompo}' component fails !"
-                    break
-                fi
-                ;;
             git-update)
                 pkgtools__msg_notice "Updating '${icompo}' component"
                 git svn fetch
                 git svn rebase
                 if [ $? -ne 0 ]; then
                     pkgtools__msg_error "Updating '${icompo}' component fails !"
+                    break
+                fi
+                ;;
+            git-branch)
+                pkgtools__msg_notice "Changing git branch to '${git_branch}' for '${icompo}' component"
+                git checkout ${git_branch} > /dev/null 2>&1
+                if [ $? -eq 0 ]; then
+                    export __${icompo}_dev_branch=${git_branch}
+                else
+                    pkgtools__msg_error "Changing git branch for '${icompo}' component fails !"
                     break
                 fi
                 ;;
@@ -391,6 +405,14 @@ function snailware ()
                     break
                 else
                     touch ".${icompo}_dev_tested"
+                fi
+                ;;
+            svn-update)
+                pkgtools__msg_notice "Updating '${icompo}' component"
+                svn up
+                if [ $? -ne 0 ]; then
+                    pkgtools__msg_error "Updating '${icompo}' component fails !"
+                    break
                 fi
                 ;;
             svn-status)

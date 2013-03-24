@@ -18,6 +18,7 @@ _snailware_aliasmap=(
   co     svn-checkout
   git-co git-checkout
   git-up git-update
+  git-br git-branch
   go     goto
   env    environment
 )
@@ -62,8 +63,8 @@ function _snailware-configure ()
     local -a args
 
     args=(
-        '--with-test[build with test (default)]'
-        '--without-test[do not build test programs]'
+        '--with-test[build with test]'
+        '--without-test[do not build test programs (default)]'
         '--with-doc[build documentation]'
         '--without-doc[do not build documentation (default)]'
         '*:: :->'
@@ -111,6 +112,19 @@ function _snailware-git-checkout ()
 function _snailware-git-update ()
 {
     [[ -n ${snailware_describe} ]] && print "Git-svn update a component" && return
+    __snailware-choose-component
+}
+
+function _snailware-git-branch ()
+{
+    [[ -n ${snailware_describe} ]] && print "Git-svn branch a component" && return
+    local -a args
+
+    args=(
+        '--branch[set branch name]'
+        '*:: :->'
+    )
+    _arguments ${args} && return
     __snailware-choose-component
 }
 
