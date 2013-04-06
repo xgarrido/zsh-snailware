@@ -261,6 +261,25 @@ function snailware ()
                             --trunk=trunk --tags=tags --branches=branches \
                             ${svn_path}
                         git svn fetch
+                        git branch -l --no-color
+                        for branch in $(git branch -r --no-color)
+                        do
+                            if [[ $branch == *svn/tags* ]]; then
+                                subject=$(git log -1 --pretty=format:%s $branch)
+                                new_branch=${branch/svn\/tags\/}
+                                git tag -a -m \"$subject\" $new_branch $branch
+                                git branch -d -r $branch
+                            else
+                                new_branch=${branch/svn\/}
+                                if [ $new_branch != trunk ]; then
+                                    git branch --track ${new_branch} remotes/$branch
+                                    git checkout $new_branch
+                                else
+                                    git checkout -f master
+                                    git gc
+                                fi
+                            fi
+                        done
                     fi
                 )
             fi
