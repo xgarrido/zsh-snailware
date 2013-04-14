@@ -14,14 +14,16 @@ typeset -ga __bayeux_bundles
 __bayeux_bundles=(
     datatools
     mygsl
+    materials
     geomtools
     brio
     cuts
     genbb_help
     genvtx
-    materials
     trackfit
     emfield
+    dpp
+    mctools
 )
 typeset -ga __channel_bundles
 __channel_bundles=(
@@ -293,10 +295,6 @@ function snailware ()
             pushd ${SNAILWARE_DEV_DIR}/$i/${icompo} > /dev/null 2>&1
             if [ $? -eq 0 ]; then
                 is_found=1
-                # if [ "$i" = "bayeux" ]; then
-                #     pkgtools__msg_warning "Hacking 'bayeux' to use the 'legacy' branch by default"
-                #     git checkout legacy > /dev/null 2>&1
-                # fi
                 break
             fi
         done
