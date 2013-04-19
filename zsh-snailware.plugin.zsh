@@ -344,14 +344,13 @@ function snailware ()
                         pkgtools__msg_warning "Component '${icompo}' has been already setup"
                         continue
                     fi
-
                     source __instal*/etc/${dcompo}_setup.sh > ${tmp_file_name} 2>&1
                     if [ $? -eq 0 ]; then
                         do_${dcompo}_setup
                         export __${icompo}_dev_setup=1
                     else
-                        pkgtools__msg_error "Sourcing '${icompo}' component fails !"
-                        break
+                        pkgtools__msg_warning "Sourcing '${icompo}' component fails !"
+                        #break
                     fi
                 fi
                 ;;
