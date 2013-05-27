@@ -401,6 +401,7 @@ function snailware ()
                     test -f ".${icompo}_dev_install"    && rm ".${icompo}_dev_install"
                     test -f ".${icompo}_dev_configure"  && rm ".${icompo}_dev_configure"
                     test -f ".${icompo}_dev_tested"     && rm ".${icompo}_dev_tested"
+                    touch __stupid_thing
                     dirs=(ls __*)
                     for dir in $dirs
                     do
