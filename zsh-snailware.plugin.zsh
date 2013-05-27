@@ -397,12 +397,15 @@ function snailware ()
                     pkgtools__msg_error "Reseting '${icompo}' component fails !"
                     break
                 else
-                    [[ -f ".${icompo}_dev_setup" ]]     && rm ".${icompo}_dev_setup"
-                    [[ -f ".${icompo}_dev_install" ]]   && rm ".${icompo}_dev_install"
-                    [[ -f ".${icompo}_dev_configure" ]] && rm ".${icompo}_dev_configure"
-                    [[ -f ".${icompo}_dev_tested" ]]    && rm ".${icompo}_dev_tested"
-                    [[ -f "__build-*" ]]   && rm -rf "__build-*"
-                    [[ -f "__install-*" ]] && rm -rf "__install-*"
+                    test -f ".${icompo}_dev_setup"      && rm ".${icompo}_dev_setup"
+                    test -f ".${icompo}_dev_install"    && rm ".${icompo}_dev_install"
+                    test -f ".${icompo}_dev_configure"  && rm ".${icompo}_dev_configure"
+                    test -f ".${icompo}_dev_tested"     && rm ".${icompo}_dev_tested"
+                    dirs=(ls __*)
+                    for dir in $dirs
+                    do
+                        rm -rf "$dir"
+                    done
                 fi
                 ;;
             rebuild)
