@@ -276,12 +276,11 @@ function snailware ()
                                 if [ $new_branch != trunk ]; then
                                     git branch --track ${new_branch} remotes/$branch
                                     git checkout $new_branch
-                                else
-                                    git checkout -f master
-                                    git gc
                                 fi
                             fi
                         done
+                        git checkout -f master
+                        git gc
                     fi
                 )
             fi
