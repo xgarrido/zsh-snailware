@@ -653,7 +653,10 @@ function __snailware_complete ()
             token=${token//[[:blank:]]/}
             if [[ "$token" == *'"'* ]]; then
                 # Get option indentificator
-                if [[ "$token" == *'("'* && "$token" != *'->'* ]]; then
+                if [[ "$token" == *'("'* ]]; then
+                    if [[ "$token" == *'")'* ]]; then
+                        continue
+                    fi
                     if [ ${skip_multiline} -eq 1 ]; then
                         echo "${data_type}]' \\"
                         skip_multiline=0
@@ -673,12 +676,12 @@ function __snailware_complete ()
                 elif [[ "$token" == *'\n'* ]]; then
                     skip_multiline=1
                 elif [[ "$token" == *'"'*  && ${skip_multiline} -eq 0 ]]; then
-                    token=$(echo ${token} | sed 's/[("]//g')
+                    token=$(echo ${token} | sed 's/[."]//g')
                     if [ ${find_begin_description} -eq 1 ]; then
                         data_type=""
                         find_end_description=1
                         find_begin_description=0
-                        echo "${token%\"}${data_type}]' \\"
+                        echo "${token%)}${data_type}]' \\"
                     elif [ ${find_end_description} -eq 1 ]; then
                         find_end_description=0
                         find_begin_description=1
@@ -688,11 +691,12 @@ function __snailware_complete ()
                     token=$(echo ${token} | sed 's/["\\]//g')
                     echo -ne "${token} "
                 fi
-            elif [[ ${find_begin_description} -eq 1 && ${find_end_description} -eq 0 ]]; then
-                if [ "$token" != ")" ]; then
-                    token=$(echo ${token} | sed 's/\\//g')
-                    echo -ne "${token} "
-                fi
+            elif [[ "$token" != *'->'* ]]; then
+                if [[ ${find_begin_description} -eq 1 && ${find_end_description} -eq 0 ]]; then
+                    if [ "$token" != ")" ]; then
+                        token=$(echo ${token} | sed 's/[;"\\]//g')
+                        echo -ne "${token} "
+                    fi
                 # elif [[ "${token}" == *"::value<"* ]]; then
                 #     tmp=${token##*value<}
                 #     tmp=${tmp%%>*}
@@ -703,8 +707,12 @@ function __snailware_complete ()
                 #     elif [ "${tmp}" == "double" ]; then
                 #         data_type=":number"
                 #     fi
+                fi
             fi
         done
+        if [ ${find_end_description} -eq 0 ]; then
+            echo "]' \\"
+        fi
         unset token
         unset find_begin_description find_end_description
         unset skip_multiline
