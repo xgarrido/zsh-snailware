@@ -21,6 +21,7 @@ _snailware_aliasmap=(
   git-br git-branch
   go     goto
   env    environment
+  comp   complete
 )
 
 _snailware_components=(
@@ -167,6 +168,12 @@ function _snailware-environment ()
     #   development
     # )
     # _arguments ':environment:(${args})' && return
+}
+
+function _snailware-complete ()
+{
+    [[ -n ${snailware_describe} ]] && print "Build completion for component binaries" && return
+    __snailware-choose-component
 }
 
 # --- Utility functions ---

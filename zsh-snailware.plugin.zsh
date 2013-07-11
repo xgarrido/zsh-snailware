@@ -155,6 +155,8 @@ function snailware ()
                 mode="git-branch"
             elif [ "${token}" = "goto" ]; then
                 mode="goto"
+            elif [ "${token}" = "complete" ]; then
+                mode="complete"
             else
 	        arg=${token}
 	        if [ "x${arg}" != "x" ]; then
@@ -426,6 +428,13 @@ function snailware ()
                     touch ".${icompo}_dev_tested"
                 fi
                 ;;
+            complete)
+                __snailware_complete
+                if [ $? -ne 0 ]; then
+                    pkgtools__msg_error "Something when build completion for '${icompo}' programs !"
+                    break
+                fi
+                ;;
             svn-update)
                 pkgtools__msg_notice "Updating '${icompo}' component"
                 svn up
@@ -628,4 +637,136 @@ function __snailware_status ()
     return 0
 }
 
+function __snailware_complete ()
+{
+    __pkgtools__at_function_enter __snailware-complete
+
+    # Internal function to stream 'echo' command
+    __parse ()
+    {
+        local find_begin_description=0
+        local find_end_description=1
+        local skip_multiline=0
+        local data_type=""
+        for token in $(sed -n '/add_options/,/;/p' $1)
+        do
+            token=${token//[[:blank:]]/}
+            if [[ "$token" == *'"'* ]]; then
+                # Get option indentificator
+                if [[ "$token" == *'("'* && "$token" != *'->'* ]]; then
+                    if [ ${skip_multiline} -eq 1 ]; then
+                        echo "${data_type}]' \\"
+                        skip_multiline=0
+                        find_begin_description=0
+                        find_end_description=1
+                    fi
+                    local tmp=$(echo ${token%?} | sed 's/[("\]//g')
+                    local opt1=$(echo $tmp | cut -d',' -f1)
+                    local opt2=$(echo $tmp | cut -d',' -f2)
+                    if [ ${#opt1} = ${#opt2} ]; then
+                        test ${#opt1} -gt 1 && echo -ne "--${opt1}"
+                    elif [ ${#opt1} -gt ${#opt2} ]; then
+                        echo -ne "{-${opt2},--${opt1}}"
+                    else
+                        echo -ne "{-${opt1},--${opt2}}"
+                    fi
+                elif [[ "$token" == *'\n'* ]]; then
+                    skip_multiline=1
+                elif [[ "$token" == *'"'*  && ${skip_multiline} -eq 0 ]]; then
+                    token=$(echo ${token} | sed 's/[("]//g')
+                    if [ ${find_begin_description} -eq 1 ]; then
+                        data_type=""
+                        find_end_description=1
+                        find_begin_description=0
+                        echo "${token%\"}${data_type}]' \\"
+                    elif [ ${find_end_description} -eq 1 ]; then
+                        find_end_description=0
+                        find_begin_description=1
+                        echo -ne "'[${token#\"} "
+                    fi
+                else
+                    token=$(echo ${token} | sed 's/["\\]//g')
+                    echo -ne "${token} "
+                fi
+            elif [[ ${find_begin_description} -eq 1 && ${find_end_description} -eq 0 ]]; then
+                if [ "$token" != ")" ]; then
+                    token=$(echo ${token} | sed 's/\\//g')
+                    echo -ne "${token} "
+                fi
+                # elif [[ "${token}" == *"::value<"* ]]; then
+                #     tmp=${token##*value<}
+                #     tmp=${tmp%%>*}
+                #     if [ "${tmp}" == "bool" ];then
+                #         data_type=":boolean:(true false)"
+                #     elif [ "${tmp}" == "int" ]; then
+                #         data_type=":number"
+                #     elif [ "${tmp}" == "double" ]; then
+                #         data_type=":number"
+                #     fi
+            fi
+        done
+        unset token
+        unset find_begin_description find_end_description
+        unset skip_multiline
+        unset data_type
+    }
+
+    for program_file in $PWD/programs/*.cxx
+    do
+        local program_name=$(basename ${program_file%.cxx})
+        local completion_file=${SNAILWARE_GIT_DIR}/_${program_name}
+        cat ${program_file} | grep -q add_options
+        if [ $? -ne 0 ]; then
+            pkgtools__msg_warning "Program ${program_name} from '${icompo}' component does not use boost::program_option ! Skip it !"
+            continue
+        else
+            pkgtools__msg_notice "Build completion system for program ${program_name} from '${icompo}' component"
+        fi
+
+        cat << EOF > ${completion_file}
+#compdef ${program_name}
+
+function _${program_name} ()
+{
+  typeset -A opt_args
+  local context state line curcontext="$curcontext"
+
+  _arguments \\
+EOF
+        __parse ${program_file} >> ${completion_file}
+        cat << EOF >> ${completion_file}
+'*: :->args' \\
+&& ret=0
+
+  case \$state in
+    args)
+      if [[ CURRENT -eq NORMARG && \${+opt_args[--match]} -eq 0 ]]
+      then
+        # If the current argument is the first non-option argument
+        # and --match isn't present then a pattern is expected
+        _message -e patterns 'pattern' && ret=0
+      else
+        _files -/
+      fi
+      ;;
+  esac
+
+  return ret
+}
+
+_${program_name} "\$@"
+
+
+# Local Variables:
+# mode: Shell-Script
+# sh-indentation: 2
+# indent-tabs-mode: nil
+# sh-basic-offset: 2
+# End:
+EOF
+    done
+
+    __pkgtools__at_function_exit
+    return 0
+}
 # end
