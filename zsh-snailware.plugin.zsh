@@ -646,22 +646,26 @@ function __snailware_complete ()
     {
         local find_begin_description=0
         local find_end_description=1
-        local skip_multiline=0
         local data_type=""
         for token in $(sed -n '/add_options/,/;/p' $1)
         do
-            token=${token//[[:blank:]]/}
+            if [[ "$token" == *';'* ]]; then
+                break
+            fi
+            token=${token/\\n/ }
+            pkgtools__msg_devel "token = ${token}"
             if [[ "$token" == *'"'* ]]; then
                 # Get option indentificator
                 if [[ "$token" == *'("'* ]]; then
                     if [[ "$token" == *'")'* ]]; then
                         continue
                     fi
-                    if [ ${skip_multiline} -eq 1 ]; then
-                        echo "${data_type}]' \\"
-                        skip_multiline=0
-                        find_begin_description=0
+                    if [ ${find_end_description} -eq 0 ]; then
+                        data_type=""
                         find_end_description=1
+                        find_begin_description=0
+                        echo "]' \\"
+
                     fi
                     local tmp=$(echo ${token%?} | sed 's/[("\]//g')
                     local opt1=$(echo $tmp | cut -d',' -f1)
@@ -673,23 +677,23 @@ function __snailware_complete ()
                     else
                         echo -ne "{-${opt1},--${opt2}}"
                     fi
-                elif [[ "$token" == *'\n'* ]]; then
-                    skip_multiline=1
-                elif [[ "$token" == *'"'*  && ${skip_multiline} -eq 0 ]]; then
+                elif [[ "$token" == *'")'* ]]; then
                     token=$(echo ${token} | sed 's/[."]//g')
                     if [ ${find_begin_description} -eq 1 ]; then
                         data_type=""
                         find_end_description=1
                         find_begin_description=0
                         echo "${token%)}${data_type}]' \\"
-                    elif [ ${find_end_description} -eq 1 ]; then
-                        find_end_description=0
-                        find_begin_description=1
-                        echo -ne "'[${token#\"} "
                     fi
                 else
                     token=$(echo ${token} | sed 's/["\\]//g')
-                    echo -ne "${token} "
+                    if [ ${find_end_description} -eq 1 ]; then
+                        find_end_description=0
+                        find_begin_description=1
+                        echo -ne "'[${token#\"} "
+                    else
+                        echo -ne "${token} "
+                    fi
                 fi
             elif [[ "$token" != *'->'* ]]; then
                 if [[ ${find_begin_description} -eq 1 && ${find_end_description} -eq 0 ]]; then
@@ -715,17 +719,16 @@ function __snailware_complete ()
         fi
         unset token
         unset find_begin_description find_end_description
-        unset skip_multiline
         unset data_type
     }
 
-    for program_file in $PWD/programs/*.cxx
+    for program_file in $(find $PWD/programs -name "*.cxx" 2>/dev/null)
     do
         local program_name=$(basename ${program_file%.cxx})
         local completion_file=${SNAILWARE_GIT_DIR}/_${program_name}
         cat ${program_file} | grep -q add_options
         if [ $? -ne 0 ]; then
-            pkgtools__msg_warning "Program ${program_name} from '${icompo}' component does not use boost::program_option ! Skip it !"
+            pkgtools__msg_debug "Program ${program_name} from '${icompo}' component does not use boost::program_option ! Skip it !"
             continue
         else
             pkgtools__msg_notice "Build completion system for program ${program_name} from '${icompo}' component"
