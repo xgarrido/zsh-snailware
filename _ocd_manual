@@ -1,0 +1,73 @@
+#compdef ocd_manual
+
+typeset -ga _actions
+typeset -ga _class_id
+typeset -ga _dlls
+
+_dlls=(
+  ${__bayeux_bundles}
+  ${__falaise_bundles}
+  ${__chevreuse_bundles}
+)
+
+_actions=(
+  list
+  show
+  skeleton
+  validate
+)
+
+function _ocd_manual ()
+{
+  typeset -A opt_args
+  local context state line curcontext=""
+
+  _arguments \
+    {-h,--help}'[produce help message]' \
+    {-d,--debug}'[produce debug logging]' \
+    {-I,--interactive}'[run in interactive mode (not implemented)]' \
+    {-L,--dlls-config}'[set the DLL loader configuration file. Example : --dlls-config dlls.conf]' \
+    {-l,--load-dll}'[set a DLL to be loaded. Example : --load-dll genvtx]:dll:->dll' \
+    {-c,--class-id}'[set the ID of the class to be investigated. Example : --class-id genvtx::manager]:class:->class' \
+    {-a,--action}'[define the action to be performed]:actions:->actions' \
+    {-i,--input-file}'[set the name of an input filename]' \
+    {-o,--output-file}'[set the name of an output filename]' \
+    '*: :->args' \
+    && ret=0
+
+  case $state in
+    dll)
+      _wanted _dlls expl 'dll' compadd -a _dlls
+      ;;
+    class)
+      dll=$(echo ${~opt_args[-l]:-${opt_args[--load-dll]:-datatools}})
+      _class_id=( $(ocd_manual -l ${dll} --action list 2>/dev/null) )
+      _wanted _class_id expl 'class' compadd -a _class_id
+      ;;
+    actions)
+      _describe -t actions 'OCD actions' _actions && ret=0
+      ;;
+    args)
+      if [[ CURRENT -eq NORMARG && ${+opt_args[--match]} -eq 0 ]]
+      then
+        # If the current argument is the first non-option argument
+        # and --match isn't present then a pattern is expected
+        _message -e patterns 'pattern' && ret=0
+      else
+        _files -/
+      fi
+      ;;
+  esac
+
+  return ret
+}
+
+_ocd_manual "$@"
+
+
+# Local Variables:
+# mode: Shell-Script
+# sh-indentation: 2
+# indent-tabs-mode: nil
+# sh-basic-offset: 2
+# End:
