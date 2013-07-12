@@ -48,14 +48,7 @@ function _ocd_manual ()
       _describe -t actions 'OCD actions' _actions && ret=0
       ;;
     args)
-      if [[ CURRENT -eq NORMARG && ${+opt_args[--match]} -eq 0 ]]
-      then
-        # If the current argument is the first non-option argument
-        # and --match isn't present then a pattern is expected
-        _message -e patterns 'pattern' && ret=0
-      else
-        _files -/
-      fi
+      _files -/
       ;;
   esac
 
