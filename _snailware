@@ -12,13 +12,11 @@ _snailware_aliasmap=(
   build  build
   reset  reset
   test   test
-  up     svn-update
-  st     svn-status
-  diff   svn-diff
-  co     svn-checkout
-  git-co git-checkout
-  git-up git-update
-  git-br git-branch
+  st     status
+  co     git-checkout
+  up     git-update
+  br     git-branch
+  push   git-push
   go     goto
   env    environment
   comp   complete
@@ -116,6 +114,12 @@ function _snailware-git-update ()
     __snailware-choose-component
 }
 
+function _snailware-git-push ()
+{
+    [[ -n ${snailware_describe} ]] && print "Git-svn update a component" && return
+    __snailware-choose-component
+}
+
 function _snailware-git-branch ()
 {
     [[ -n ${snailware_describe} ]] && print "Git-svn branch a component" && return
@@ -126,30 +130,6 @@ function _snailware-git-branch ()
         '*:: :->'
     )
     _arguments ${args} && return
-    __snailware-choose-component
-}
-
-function _snailware-svn-checkout ()
-{
-    [[ -n ${snailware_describe} ]] && print "SVN checkout a component" && return
-    __snailware-choose-component
-}
-
-function _snailware-svn-diff ()
-{
-    [[ -n ${snailware_describe} ]] && print "SVN diff a component" && return
-    __snailware-choose-component
-}
-
-function _snailware-svn-status ()
-{
-    [[ -n ${snailware_describe} ]] && print "SVN status of a component" && return
-    __snailware-choose-component
-}
-
-function _snailware-svn-update ()
-{
-    [[ -n ${snailware_describe} ]] && print "SVN update a component" && return
     __snailware-choose-component
 }
 

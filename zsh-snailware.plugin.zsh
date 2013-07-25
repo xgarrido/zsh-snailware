@@ -67,6 +67,8 @@ alias sntest='snailware test'
 compdef _snailware snt=snailware
 alias snco='snailware git-checkout'
 compdef _snailware snco=snailware
+alias snpush='snailware git-push'
+compdef _snailware snpush=snailware
 alias sngoto='snailware goto'
 compdef _snailware sngoto=snailware
 alias snrebuild='snailware rebuild'
@@ -141,18 +143,14 @@ function snailware ()
         mode="test"
       elif [ "${token}" = "status" ]; then
         mode="status"
-      elif [ "${token}" = "svn-diff" ]; then
-        mode="svn-diff"
-      elif [ "${token}" = "svn-status" ]; then
-        mode="svn-status"
-      elif [ "${token}" = "svn-checkout" ]; then
-        mode="svn-checkout"
       elif [ "${token}" = "git-checkout" ]; then
         mode="git-checkout"
       elif [ "${token}" = "git-update" ]; then
         mode="git-update"
       elif [ "${token}" = "git-branch" ]; then
         mode="git-branch"
+      elif [ "${token}" = "git-push" ]; then
+        mode="git-push"
       elif [ "${token}" = "goto" ]; then
         mode="goto"
       elif [ "${token}" = "complete" ]; then
@@ -248,10 +246,6 @@ function snailware ()
         esac
       fi
 
-      if [ ${mode} = svn-checkout ]; then
-        pkgtools__msg_warning "SVN checkout will use the trunk directory"
-        svn co ${svn_path}/trunk ${SNAILWARE_DEV_DIR}/${aggregator}/trunk/${icompo}
-      fi
       if [ ${mode} = git-checkout ]; then
         if [ ! -d ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo} ]; then
           mkdir -p ${SNAILWARE_DEV_DIR}/${aggregator}/${icompo}
@@ -321,6 +315,14 @@ function snailware ()
         git svn rebase
         if [ $? -ne 0 ]; then
           pkgtools__msg_error "Updating '${icompo}' component fails !"
+          break
+        fi
+        ;;
+      git-push)
+        pkgtools__msg_notice "Pushing '${icompo}' component"
+        git svn dcommit
+        if [ $? -ne 0 ]; then
+          pkgtools__msg_error "Pushing '${icompo}' component fails !"
           break
         fi
         ;;
@@ -434,22 +436,6 @@ function snailware ()
           pkgtools__msg_error "Something when build completion for '${icompo}' programs !"
           break
         fi
-        ;;
-      svn-update)
-        pkgtools__msg_notice "Updating '${icompo}' component"
-        svn up
-        if [ $? -ne 0 ]; then
-          pkgtools__msg_error "Updating '${icompo}' component fails !"
-          break
-        fi
-        ;;
-      svn-status)
-        pkgtools__msg_notice "SVN status '${icompo}' component"
-        svnstatus
-        ;;
-      svn-diff)
-        pkgtools__msg_notice "SVN diff '${icompo}' component"
-        svndiff
         ;;
     esac
 
