@@ -1,5 +1,18 @@
 #compdef snemo_event_browser
 
+typeset -ga _logs
+
+_logs=(
+  "fatal"
+  "critical"
+  "error"
+  "warning"
+  "notice"
+  "information"
+  "debug"
+  "trace"
+)
+
 function _snemo_event_browser  ()
 {
   typeset -A opt_args
@@ -7,8 +20,7 @@ function _snemo_event_browser  ()
 
   _arguments \
     {-h,--help}'[produce help message]'          \
-    {-d,--debug}'[produce debug logging]'       \
-    {-v,--verbose}'[produce verbose logging]' \
+    {-g,--logging-priority}'[set logging priority]:log:->log'       \
     {-s,--scale}'[scale factor for computer screen (height/width)]:number' \
     {-a,--auto-reading-delay}'[automatic event reading delay in seconds]:number' \
     --detector-config-file'[set the path to the detector config file]' \
@@ -39,6 +51,9 @@ function _snemo_event_browser  ()
       else
         _files -/
       fi
+      ;;
+    log)
+      _describe -t log 'Logging priority' _logs && ret=0
       ;;
   esac
 
