@@ -255,7 +255,7 @@ function snailware ()
           if (( $+commands[go-svn2git] )); then
             go-svn2git -username garrido -verbose ${svn_path}
           else
-            git svn init --prefix=svn/ --username=garrido     \
+            git svn init --prefix=svn/ --username=garrido   \
               --trunk=trunk --tags=tags --branches=branches \
               ${svn_path}
             git svn fetch
@@ -270,7 +270,7 @@ function snailware ()
               else
                 new_branch=${branch/svn\/}
                 if [ $new_branch != trunk ]; then
-                  git branch --track ${new_branch} remotes/$branch
+                  git branch ${new_branch} remotes/$branch
                   git checkout $new_branch
                 fi
               fi

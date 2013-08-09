@@ -116,7 +116,7 @@ function _snailware-git-update ()
 
 function _snailware-git-push ()
 {
-    [[ -n ${snailware_describe} ]] && print "Git-svn update a component" && return
+    [[ -n ${snailware_describe} ]] && print "Git-svn push a component" && return
     __snailware-choose-component
 }
 
