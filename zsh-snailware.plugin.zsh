@@ -479,7 +479,7 @@ function __snailware_environment ()
       nemo_base_dir_tmp="/exp/nemo/snsw"
       nemo_pro_dir_tmp="${nemo_base_dir_tmp}/supernemo/snware"
       nemo_dev_dir_tmp="/exp/nemo/${USER}/workdir/supernemo/development"
-      nemo_simulation_dir_tmp="/scratch/${USER}/simulations"
+      nemo_simulation_dir_tmp="/exp/nemo/${USER}/workdir/supernemo/simulations"
       cadfael_version="0.1.0"
       ;;
     ccige*|ccage*)
