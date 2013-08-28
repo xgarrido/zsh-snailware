@@ -18,11 +18,11 @@ __bayeux_bundles=(
   geomtools
   brio
   cuts
-  genbb_help
   genvtx
   trackfit
   emfield
   dpp
+  genbb_help
   mctools
 )
 typeset -ga __channel_bundles
@@ -36,8 +36,8 @@ __falaise_bundles=(
   sngeometry
   sncore
   sngenvertex
-  sngenbb
-  sng4
+  # sngenbb
+  # sng4
   snreconstruction
   snvisualization
   snanalysis
