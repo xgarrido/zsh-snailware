@@ -35,7 +35,7 @@ typeset -ga __falaise_bundles
 __falaise_bundles=(
   sngeometry
   sncore
-  sngenvertex
+  # sngenvertex
   # sngenbb
   # sng4
   snreconstruction
