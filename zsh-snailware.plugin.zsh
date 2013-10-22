@@ -86,6 +86,7 @@ function snailware ()
   local with_test=0
   local with_doc=0
   local git_branch=
+  local use_ninja=true
 
   while [ -n "$1" ]; do
     local token=$1
@@ -111,6 +112,8 @@ function snailware ()
 	pkgtools__ui_batch
       elif [ "${opt}" = "--gui" ]; then
 	pkgtools__ui_using_gui
+      elif [ "${opt}" = "--no-ninja" ]; then
+	use_ninja=false
       elif [ "${opt}" = "--with-test" ]; then
 	with_test=1
       elif [ "${opt}" = "--without-test" ]; then
@@ -284,17 +287,17 @@ function snailware ()
     fi
 
     # Look for the corresponding directory
-    local is_found=0
+    local is_found=false
     for i in ${__aggregator_bundles}
     do
       pushd ${SNAILWARE_DEV_DIR}/$i/${icompo} > /dev/null 2>&1
       if [ $? -eq 0 ]; then
-        is_found=1
+        is_found=true
         break
       fi
     done
 
-    if [ ${is_found} -eq 0 ]; then
+    if ! ${is_found}; then
       pkgtools__msg_error "Development directory of '${icompo}' does not exist!"
       continue
     elif [ ${mode} = goto ]; then
@@ -303,11 +306,22 @@ function snailware ()
     fi
     unset is_found
 
+    # Prepare log files
     local tmp_dir=/tmp/${USER}
     if [ ! -d ${tmp_dir} ]; then mkdir ${tmp_dir}; fi
     local tmp_file_name=${tmp_dir}/${icompo}_dev.log
     if [ -f ${tmp_file_name} ]; then rm -rf ${tmp_file_name}; fi
 
+    # Check ninja availability
+    if ${use_ninja}; then
+      if ! $(pkgtools__has_binary ninja); then
+        pkgtools__msg_error "Missing 'ninja' binary !"
+        __pkgtools__at_function_exit
+        return 1
+      fi
+    fi
+
+    # Check mode
     case ${mode} in
       git-update)
         pkgtools__msg_notice "Updating '${icompo}' component"
@@ -338,27 +352,30 @@ function snailware ()
         ;;
       setup)
         pkgtools__msg_notice "Sourcing '${icompo}' component"
-        if [[ ${__aggregator_bundles[(i)${icompo}]} -le ${#__aggregator_bundles} ]]; then
-          snailware::source_${icompo}
-        else
-          local dcompo=$(echo ${icompo} | tr '[A-Z]' '[a-z]')
-          local test_env=$(eval "echo \$$(echo __${icompo}_dev_setup)")
-          if [ -n "${test_env}" ]; then
-            pkgtools__msg_warning "Component '${icompo}' has been already setup"
-            continue
-          fi
-          source __instal*/etc/${dcompo}_setup.sh > ${tmp_file_name} 2>&1
-          if [ $? -eq 0 ]; then
-            do_${dcompo}_setup
-            export __${icompo}_dev_setup=1
-          else
-            pkgtools__msg_warning "Sourcing '${icompo}' component fails !"
-            #break
-          fi
+        local dcompo=$(echo ${icompo} | tr '[A-Z]' '[a-z]')
+        local test_env=$(eval "echo \$$(echo __${icompo}_dev_setup)")
+        if [ -n "${test_env}" ]; then
+          pkgtools__msg_warning "Component '${icompo}' has been already setup"
+          continue
         fi
+        source __install-*/etc/${icompo:l}_setup.sh > ${tmp_file_name} 2>&1
+        if [ $? -eq 0 ]; then
+          do_${icompo:l}_setup
+          export __${icompo}_dev_setup=1
+        else
+          pkgtools__msg_warning "Sourcing '${icompo}' component fails !"
+          #break
+        fi
+        unset dcompo test_env
         ;;
       configure)
         pkgtools__msg_notice "Configuring '${icompo}' component"
+        if $use_ninja; then
+          cp ./pkgtools.d/pkgtool ${tmp_dir}/pkgtool_${icompo}
+          if [ ${icompo} != genbb_help ]; then
+            sed -i -e 's@local additional_options=.*@local additional_options="-G Ninja -DCMAKE_MAKE_PROGRAM='$(pkgtools__get_binary_path ninja)' "@' pkgtools.d/pkgtool
+          fi
+        fi
         local configure_option
         if [ ${with_test} -eq 0 ]; then
           configure_option+="--without-test "
@@ -375,22 +392,39 @@ function snailware ()
         if [ $? -ne 0 ]; then
           pkgtools__msg_error "Configuring '${icompo}' component fails !"
           [[ -f ".${icompo}_dev_configure" ]] && rm ".${icompo}_dev_configure"
+          cp ${tmp_dir}/pkgtool_${icompo} ./pkgtools.d/pkgtool
           break
         else
           touch ".${icompo}_dev_configure"
         fi
+        cp ${tmp_dir}/pkgtool_${icompo} ./pkgtools.d/pkgtool
         unset configure_option
         ;;
       build)
         pkgtools__msg_notice "Building '${icompo}' component"
-        ./pkgtools.d/pkgtool install
-        if [ $? -ne 0 ]; then
-          pkgtools__msg_error "Building '${icompo}' component fails !"
-          [[ -f ".${icompo}_dev_install" ]] && rm ".${icompo}_dev_install"
-          break
+        if ${use_ninja} && [[ ${icompo} != genbb_help ]]; then
+          (
+            cd __build-*
+            ninja install
+          )
+          if [ $? -ne 0 ]; then
+            pkgtools__msg_error "Building '${icompo}' component fails !"
+            [[ -f ".${icompo}_dev_install" ]] && rm ".${icompo}_dev_install"
+            break
+          else
+            touch ".${icompo}_dev_install"
+            [[ -f ".${icompo}_dev_tested" ]] && rm ".${icompo}_dev_tested"
+          fi
         else
-          touch ".${icompo}_dev_install"
-          [[ -f ".${icompo}_dev_tested" ]] && rm ".${icompo}_dev_tested"
+          ./pkgtools.d/pkgtool install
+          if [ $? -ne 0 ]; then
+            pkgtools__msg_error "Building '${icompo}' component fails !"
+            [[ -f ".${icompo}_dev_install" ]] && rm ".${icompo}_dev_install"
+            break
+          else
+            touch ".${icompo}_dev_install"
+            [[ -f ".${icompo}_dev_tested" ]] && rm ".${icompo}_dev_tested"
+          fi
         fi
         ;;
       reset)
@@ -421,13 +455,27 @@ function snailware ()
         ;;
       test)
         pkgtools__msg_notice "Testing '${icompo}' component"
-        ./pkgtools.d/pkgtool test
-        if [ $? -ne 0 ]; then
-          pkgtools__msg_error "Testing '${icompo}' component fails !"
-          [[ -f ".${icompo}_dev_tested" ]] && rm ".${icompo}_dev_tested"
-          break
+        if ${use_ninja} && [[ ${icompo} != genbb_help ]]; then
+          (
+            cd __build-*
+            ninja test
+          )
+          if [ $? -ne 0 ]; then
+            pkgtools__msg_error "Testing '${icompo}' component fails !"
+            [[ -f ".${icompo}_dev_tested" ]] && rm ".${icompo}_dev_tested"
+            break
+          else
+            touch ".${icompo}_dev_tested"
+          fi
         else
-          touch ".${icompo}_dev_tested"
+          ./pkgtools.d/pkgtool test
+          if [ $? -ne 0 ]; then
+            pkgtools__msg_error "Testing '${icompo}' component fails !"
+            [[ -f ".${icompo}_dev_tested" ]] && rm ".${icompo}_dev_tested"
+            break
+          else
+            touch ".${icompo}_dev_tested"
+          fi
         fi
         ;;
       complete)
@@ -438,7 +486,6 @@ function snailware ()
         fi
         ;;
     esac
-
     popd > /dev/null 2>&1
   done
 
