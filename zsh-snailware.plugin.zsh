@@ -35,13 +35,9 @@ typeset -ga __falaise_bundles
 __falaise_bundles=(
   sngeometry
   sncore
-  sngenvertex
-  # sngenbb
-  # sng4
   snreconstruction
   snvisualization
   snanalysis
-  #    snelectronics
 )
 typeset -ga __chevreuse_bundles
 __chevreuse_bundles=(
