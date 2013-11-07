@@ -483,12 +483,12 @@ function __snailware_environment ()
       cadfael_version="0.1.0"
       ;;
     ccige*|ccage*)
-      nemo_base_dir_tmp="/afs/in2p3.fr/group/nemo"
-      nemo_pro_dir_tmp="${nemo_base_dir_tmp}/sw2"
+      nemo_base_dir_tmp="/sps/nemo/sw/"
+      nemo_pro_dir_tmp="${nemo_base_dir_tmp}/SL6.4"
       nemo_dev_dir_tmp="/sps/nemo/scratch/${USER}/workdir/supernemo/development"
       nemo_simulation_dir_tmp="/sps/nemo/scratch/${USER}/simulations"
-      cadfael_version="0.2.1"
-      cadfael_setup_file="${nemo_pro_dir_tmp}/Cadfael/Cadfael-${cadfael_version}/Install/etc/cadfael_setup.sh"
+      cadfael_version="legacy"
+      cadfael_setup_file="${nemo_pro_dir_tmp}/Cadfael/Cadfael-${cadfael_version}/Install*/etc/cadfael_setup.sh"
       ;;
     *)
       nemo_base_dir_tmp="/home/${USER}/Workdir"
