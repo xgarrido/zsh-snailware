@@ -569,25 +569,25 @@ function __snailware_status ()
       echo
       echo -n "$fg_bold[blue]"
       printf ' %15s %6s %6s %6s %6s %6s\n' falaise status source config. install tested
-      __snailware_status sngeometry sncore sngenvertex sngenbb sng4 snreconstruction snvisualization snanalysis
+      __snailware_status ${__falaise_bundles}
       continue
     elif [ "${icompo}" = "bayeux" ]; then
       echo
       echo -n "$fg_bold[red]"
       printf ' %15s %6s %6s %6s %6s %6s\n' bayeux status source config. install tested
-      __snailware_status datatools brio cuts mygsl geomtools genbb_help genvtx materials trackfit
+      __snailware_status ${__bayeux_bundles}
       continue
     elif [ "${icompo}" = "channel" ]; then
       echo
       echo -n "$fg_bold[green]"
       printf ' %15s %6s %6s %6s %6s %6s\n' channel status source config. install tested
-      __snailware_status TrackerPreClustering CellularAutomatonTracker TrackerClusterPath
+      __snailware_status ${__channel_bundles}
       continue
     elif [ "${icompo}" = "chevreuse" ]; then
       echo
       echo -n "$fg_bold[magenta]"
       printf ' %15s %6s %6s %6s %6s %6s\n' chevreuse status source config. install tested
-      __snailware_status matacqana bipoanalysis bipovisualization
+      __snailware_status ${__chevreuse_bundles}
       continue
     fi
 
