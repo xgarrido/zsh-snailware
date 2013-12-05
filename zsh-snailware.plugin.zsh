@@ -368,9 +368,7 @@ function snailware ()
         pkgtools__msg_notice "Configuring '${icompo}' component"
         if $use_ninja; then
           cp ./pkgtools.d/pkgtool ${tmp_dir}/pkgtool_${icompo}
-          if [ ${icompo} != genbb_help ]; then
-            sed -i -e 's@local additional_options=.*@local additional_options="-G Ninja -DCMAKE_MAKE_PROGRAM='$(pkgtools__get_binary_path ninja)' "@' pkgtools.d/pkgtool
-          fi
+          sed -i -e 's@local additional_options=.*@local additional_options="-G Ninja -DCMAKE_MAKE_PROGRAM='$(pkgtools__get_binary_path ninja)' "@' pkgtools.d/pkgtool
         fi
         local configure_option
         if [ ${with_test} -eq 0 ]; then
@@ -398,7 +396,7 @@ function snailware ()
         ;;
       build)
         pkgtools__msg_notice "Building '${icompo}' component"
-        if ${use_ninja} && [[ ${icompo} != genbb_help ]]; then
+        if ${use_ninja}; then
           (
             cd __build-*
             ninja install
@@ -451,7 +449,7 @@ function snailware ()
         ;;
       test)
         pkgtools__msg_notice "Testing '${icompo}' component"
-        if ${use_ninja} && [[ ${icompo} != genbb_help ]]; then
+        if ${use_ninja}; then
           (
             cd __build-*
             ninja test
